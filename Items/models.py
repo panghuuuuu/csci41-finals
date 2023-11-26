@@ -14,13 +14,13 @@ class Item(models.Model):
         (MOBILE_PHONES, 'Mobile Phones'),
         (SMALL_APPLIANCES, 'Small Appliances') ]
 
-    item_number = models.AutoField(primary_key = True, Unique = True)
+    item_number = models.AutoField(primary_key = True, unique = True)
     item_brand = models.CharField(max_length = 300)
     item_model = models.CharField(max_length = 300)
     item_qty = models.IntegerField()
     item_type = models.CharField(max_length = 300, choices = ITEM_TYPE_CHOICES)
-    item_cost = models.DecimalField(max_digits = None, decimal_places = 3) #not sure if none
-    item_SRP = models.DecimalField(max_digits = None, decimal_places = 3) #not sure if none
+    item_cost = models.DecimalField(max_digits = 10, decimal_places = 3) #not sure if none
+    item_SRP = models.DecimalField(max_digits = 10, decimal_places = 3) #not sure if none
     item_total_cost = models.DecimalField(max_digits = 10, decimal_places = 2, editable = False)
 
     def save(self, *args, **kwargs):

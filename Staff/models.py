@@ -13,7 +13,7 @@ class Staff(models.Model):
         (RECEIVER, 'Receiver'),
     ]
 
-    staff_number = models.AutoField(primary_key = True, Unique = True)
+    staff_number = models.AutoField(primary_key = True, unique = True)
     staff_first_name = models.CharField(max_length = 300)
     staff_last_name = models.CharField(max_length = 300)
     staff_phone_number = models.IntegerField()
