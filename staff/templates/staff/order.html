@@ -8,16 +8,10 @@
     <title>Order Page</title>
     <script>
         function addOrderItem() {
-            // Get the selected item value
             var selectedItem = document.getElementById("items").value;
-
-            // Set the selected item value to the hidden input field in the form
             document.getElementById("item").value = selectedItem;
-
-            // Get the form and submit it
             var form = document.getElementById('orderItemForm');
             var formData = new FormData(form);
-
             var xhr = new XMLHttpRequest();
             xhr.open('POST', form.getAttribute('data-url'), true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
