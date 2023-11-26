@@ -1,5 +1,6 @@
 from django.db import models
-
+from items.models import Item, OrderedItem
+from supplier.models import Supplier
 # Create your models here.
 class Staff(models.Model):
 
@@ -33,3 +34,8 @@ class Issuer(models.Model):
     def __str__(self):
         return f"Issuer: {self.staff.staff_first_name} {self.staff.staff_last_name}"
 
+class Order(models.Model):
+    staff = models.ForeignKey('Staff', on_delete=models.CASCADE)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=True, blank=True)
+    ordered_items = models.ManyToManyField(OrderedItem)    
+    order_date = models.DateField(auto_now_add=True)
