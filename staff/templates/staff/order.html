@@ -24,29 +24,35 @@
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
             xhr.onload = function () {
+                console.log(xhr.responseText);
                 if (xhr.status >= 200 && xhr.status < 400) {
-                    document.getElementById('orderedItems').innerHTML = xhr.responseText;
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        alert(response.error);
+                    } else {
+                        document.getElementById('orderedItems').innerHTML = response.ordered_items_html;
+                    }
+                } else {
+                    console.error("Error adding order item");
                 }
             };
-
             xhr.send(formData);
-            fetchOrderedItems();
         }
+
 
         function fetchOrderedItems() {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', "{% url 'fetch_ordered_items' %}", true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-
             xhr.onload = function () {
                 if (xhr.status >= 200 && xhr.status < 400) {
                     document.getElementById('orderedItems').innerHTML = xhr.responseText;
                 }
             };
-
             xhr.send();
         }
     </script>
+
 </head>
 
 <body>
@@ -90,7 +96,7 @@
         {% csrf_token %}
         {{ form.errors }}
 
-        <label for="item">Item: </label>
+        <label for="items">Item: </label>
         <select id="items" name="items">
             {% for item in items %}
             <option value="{{ item.item_number }}">{{ item }}</option>
@@ -108,14 +114,7 @@
     <div id="orderedItems">
     </div>
     <form method="post" action="{% url 'submit_order' %}">
-        <h2>Ordered Items</h2>
-        <ul>
-            {% for ordered_item in order.ordered_items.all %}
-            <li>{{ ordered_item.item.item_brand }} - {{ ordered_item.item.item_model }} (Quantity: {{
-                ordered_item.order_quantity }})</li>
-            {% endfor %}
-        </ul>
-        <button type="submit">Submit Order</button>
+        <button type="submit">Generate Order Receipt</button>
     </form>
 
     <form method="post" action="{% url 'logout_view' %}">
