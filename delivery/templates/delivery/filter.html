@@ -1,0 +1,27 @@
+{% block title %} Filter {% endblock %}
+{% block header %} 
+    <h1> Search Form </h1> 
+{% endblock %}
+{% block content %}
+<form method="GET" action=".">
+    <input type="search" name="search_by_item" placeholder="Search for an Item" />
+    <input type="search" name="search_by_item_type" placeholder="Search by Item Type" />
+    <input type="search" name="search_by_date" placeholder="Search by Date" />
+    <button type="submit"> Search </button>
+</form>
+<hr />
+<div>
+    <ul>
+        {% for item in queryset %}
+        <li>
+            <span> Delivery: {{ deliveryreceipt.delivery_number }} </span>
+            <span> Date: {{ deliveryreceipt.date }} </span>
+            <span> Time: {{ deliveryreceipt.time }} </span>
+            <span> Receiver: {{ deliveryreceipt.receiver }} </span>
+            <span> Supplier: {{ deliveryreceipt.supplier }} </span>
+        </li>
+        <hr />
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
