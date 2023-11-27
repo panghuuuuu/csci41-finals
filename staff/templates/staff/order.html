@@ -1,4 +1,3 @@
-<!-- staff/order.html -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,8 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Page</title>
     <script>
+        window.addEventListener('load', function () {
+            fetchOrderedItems();
+        });
+
         function addOrderItem() {
             var selectedItem = document.getElementById("items").value;
+            var selectedSupplier = document.getElementById("supplier").value;
+            var supplierDropdown = document.getElementById("supplier");
+            supplierDropdown.disabled = true;
+            supplierDropdown.style.color = "#777";
             document.getElementById("item").value = selectedItem;
             var form = document.getElementById('orderItemForm');
             var formData = new FormData(form);
@@ -23,8 +30,22 @@
             };
 
             xhr.send(formData);
+            fetchOrderedItems();
         }
 
+        function fetchOrderedItems() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', "{% url 'fetch_ordered_items' %}", true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 400) {
+                    document.getElementById('orderedItems').innerHTML = xhr.responseText;
+                }
+            };
+
+            xhr.send();
+        }
     </script>
 </head>
 
@@ -32,6 +53,7 @@
     <h1>Order Page</h1>
 
     <form method="get" action="{% url 'get_items' %}">
+        {% if not supplier_selected %}
         <label for="supplier">Select Supplier:</label>
         <select name="supplier" id="supplier">
             {% for supplier in suppliers %}
@@ -39,6 +61,7 @@
             {% endfor %}
         </select>
         <button type="submit">Select Supplier</button>
+        {% endif %}
     </form>
 
     {% if selected_supplier %}
@@ -74,6 +97,7 @@
             {% endfor %}
         </select>
         <input type="hidden" id="item" name="item">
+        <input type="hidden" id="selected_supplier" name="selected_supplier">
 
         <label for="order_quantity">Quantity: </label>
         <input type="number" id="order_quantity" name="order_quantity">
@@ -92,6 +116,11 @@
             {% endfor %}
         </ul>
         <button type="submit">Submit Order</button>
+    </form>
+
+    <form method="post" action="{% url 'logout_view' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
     </form>
 
 </body>

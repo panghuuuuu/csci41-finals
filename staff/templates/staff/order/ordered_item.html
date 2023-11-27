@@ -1,7 +1,7 @@
 <!-- ordered_items.html -->
 <ul>
     {% for ordered_item in ordered_items %}
-    <li>{{ ordered_item.item.brand }} {{ ordered_item.item.model }} Quantity: {{ordered_item.order_quantity}} Total
-        Cost: {{ordered_item.total_cost}}</li>
+    <li>{{ ordered_item.item }} {{ ordered_item.item.brand }} Quantity: {{ordered_item.order_quantity}} Total
+        Cost: {{ordered_item.item.total_cost}}</li>
     {% endfor %}
 </ul>

@@ -1,6 +1,5 @@
 from django.db import models
 from supplier.models import Supplier
-
 # Create your models here.
 class Item(models.Model):
 
@@ -48,9 +47,17 @@ class SoldItem(models.Model):
         return f"SoldItem: {self.item.item_brand} {self.item.item_model}"
 
 class OrderedItem(models.Model):
-    item = models.OneToOneField(Item, on_delete = models.CASCADE)
+    item = models.ForeignKey('Item', on_delete=models.CASCADE)
     order_quantity = models.IntegerField()
-    
+    staff_member = models.ForeignKey('staff.Receiver', on_delete=models.CASCADE)
+    order_total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
+    def save(self, *args, **kwargs):
+        if self.order_total_cost is not None:
+            self.order_total_cost = self.item.item_cost * self.order_quantity
+        else:
+            self.order_total_cost = 0
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"OrderedItem: {self.item.item_brand} {self.order_quantity} pcs"
 
@@ -59,7 +66,7 @@ class DeliveredItem(models.Model):
     delivered_quantity = models.IntegerField()
 
     def __str__(self):
-        return f"DeliveredItem: {self.item.item_brand}: {delivered_quantity} pcs"
+        return f"DeliveredItem: {self.item.item_brand}: {self.delivered_quantity} pcs"
 
 class IssuedItem(models.Model):
     item = models.OneToOneField(Item, on_delete = models.CASCADE)
