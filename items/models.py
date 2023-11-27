@@ -1,5 +1,5 @@
 from django.db import models
-
+from supplier.models import Supplier
 # Create your models here.
 class Item(models.Model):
 
@@ -19,17 +19,26 @@ class Item(models.Model):
     item_model = models.CharField(max_length = 300)
     item_qty = models.IntegerField()
     item_type = models.CharField(max_length = 300, choices = ITEM_TYPE_CHOICES)
-    item_cost = models.DecimalField(max_digits = 10, decimal_places = 3) #not sure if none
-    item_SRP = models.DecimalField(max_digits = 10, decimal_places = 3) #not sure if none
-    item_total_cost = models.DecimalField(max_digits = 10, decimal_places = 2, editable = False)
-
+    item_cost = models.DecimalField(max_digits = 10, decimal_places = 3) 
+    item_SRP = models.DecimalField(max_digits = 10, decimal_places = 3) 
+    item_total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
+    
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=True, blank=True, default='temp_default_value')
+    
     def save(self, *args, **kwargs):
-        self.total_cost = self.item_total_cost * self.item_qty
+        if self.item_total_cost is not None:
+            self.item_total_cost = self.item_cost * self.item_qty
+        else:
+            self.total_cost = 0
         super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.item_brand} {self.item_model}"
+
 
 class SoldItem(models.Model):
     item = models.OneToOneField(Item, on_delete = models.CASCADE)
-    sold_quantiy = models.IntegerField()
+    sold_quantity = models.IntegerField()
 
     def save(self, *args, **kwargs):
         self.total_sales = self.sold_quantity * self.item_total_cost
@@ -37,26 +46,41 @@ class SoldItem(models.Model):
     def __str__(self):
         return f"SoldItem: {self.item.item_brand} {self.item.item_model}"
 
+class OrderedItem(models.Model):
+    item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    order_quantity = models.IntegerField()
+    staff_member = models.ForeignKey('staff.Receiver', on_delete=models.CASCADE)
+    order_total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
+    def save(self, *args, **kwargs):
+        if self.order_total_cost is not None:
+            self.order_total_cost = self.item.item_cost * self.order_quantity
+        else:
+            self.order_total_cost = 0
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"OrderedItem: {self.item.item_brand} {self.order_quantity} pcs"
+
 class DeliveredItem(models.Model):
     item = models.OneToOneField(Item, on_delete = models.CASCADE)
     delivered_quantity = models.IntegerField()
 
     def __str__(self):
-        return f"DeliveredItem: {self.item.item_brand} {self.item.item_model}"
+        return f"DeliveredItem: {self.item.item_brand}: {self.delivered_quantity} pcs"
 
 class IssuedItem(models.Model):
     item = models.OneToOneField(Item, on_delete = models.CASCADE)
     issued_quantity = models.IntegerField()
 
     def __str__(self):
-        return f"IssuedItem: {self.item.item_brand} {self.item.item_model}"
+        return f"IssuedItem: {self.item.item_brand}: {issued_quantity} pcs"
 
 class ReturnedItem(models.Model):
     item = models.OneToOneField(Item, on_delete = models.CASCADE)
-    quantity_returned = models.IntegerField()
+    returned_quantity = models.IntegerField()
 
     def __str__(self):
-        return f"ReturnedItem: {self.item.item_brand} {self.staff.item_model}"
+        return f"ReturnedItem: {self.item.item_brand}: {returned_quantity} pcs"
 
 class BatchInventory(models.Model):
     batch_inventory = models.ManyToManyField(DeliveredItem)
