@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, HttpResponse, redirect
 from items.models import Item, OrderedItem
 from supplier.models import Supplier
 from .models import Staff, Receiver, Order
@@ -46,52 +46,52 @@ def get_items(request):
 def fetch_ordered_items(request):
     staff = Staff.objects.get(staff_number=request.user.username)
     receiver = Receiver.objects.get(staff=staff)
-    ordered_items = OrderedItem.objects.filter(staff_member=receiver)
-    return render(request, 'staff/order/ordered_item.html', {'ordered_items': ordered_items})
+    try:
+        order = Order.objects.get(receiver=receiver, isDelivered=False)
+        order_number = order.order_number
+        ordered_items = order.ordered_items.all()
+        return render(request, 'staff/order/ordered_item.html', {'ordered_items': ordered_items, 'order_number': order_number})
+    except Order.DoesNotExist:
+        print("No existing order found for the given criteria.")
+        return HttpResponse("No pending order found for current user.")
 
 def order_item(request):
-    ordered_items_key = f'ordered_items_{request.user.id}'
-    ordered_items = request.session.get(ordered_items_key, [])
     if request.method == 'POST':
         form = OrderedItemForm(request.POST, request=request)
         if form.is_valid():
             selected_item = form.cleaned_data['item']
             selected_quantity = form.cleaned_data['order_quantity']
-            selected_supplier = request.POST.get('supplier')
+            selected_supplier = selected_item.supplier
             staff = Staff.objects.get(staff_number=request.user.username)
             receiver = Receiver.objects.get(staff=staff)
             existing_item = None
-            for item_data in ordered_items:
-                if item_data['item']['item_number'] == selected_item.item_number:
-                    item_data['order_quantity'] = selected_quantity
-                    item_data['order_total_cost'] = float(selected_item.item_cost) * item_data['order_quantity']
-                    existing_item = item_data
-                    break
-            if existing_item:
-                return JsonResponse({'error': 'Ordered item with this Item already exists for the current staff member.'})
-            else:            
-                total_cost = float(selected_item.item_cost) * selected_quantity
-                ordered_items.append({
-                    'item': {
-                        'item_number': selected_item.item_number,
-                        'item_brand': selected_item.item_brand,
-                        'item_model': selected_item.item_model,
-                    },
-                    'order_quantity': selected_quantity,
-                    'order_total_cost': total_cost,
-                })
-                order_instance = Order.objects.create(staff=staff, supplier=selected_supplier)
+            existing_order = Order.objects.filter(receiver=receiver, isDelivered=False).first()
+            total_cost = float(selected_item.item_cost) * selected_quantity
 
-                order_item_instance = OrderedItem.objects.create(
-                    item=selected_item,
-                    order_quantity=selected_quantity,
-                    staff_member=receiver
-                )
-
-                order_instance.ordered_items.add(order_item_instance)
-                request.session[ordered_items_key] = ordered_items
-                ordered_items_html = render_to_string('staff/order/ordered_item.html', {'ordered_items': ordered_items})
-                return JsonResponse({'ordered_items_html': ordered_items_html})
+            if existing_order:
+                for item in existing_order.ordered_items.all():
+                    if selected_item == item:
+                        existing_item = item
+                        break
+                if existing_item:
+                    return JsonResponse({'error': 'Ordered item with this Item already exists for the current staff member.'})
+                
+                order_instance = existing_order
+            else:              
+                order_instance = Order.objects.create(receiver=receiver, supplier=selected_supplier)
+            
+            order_item_instance = OrderedItem.objects.create(
+                item=selected_item,
+                order=order_instance,
+                order_quantity=selected_quantity,
+                staff_member=receiver,
+                order_total_cost=total_cost
+            )
+            order_instance.ordered_items.add(order_item_instance)
+            ordered_items = order_instance.ordered_items.all()
+            
+            ordered_items_html = render_to_string('staff/order/ordered_item.html', {'ordered_items': ordered_items, 'order_number': order_instance.order_number})
+            return JsonResponse({'ordered_items_html': ordered_items_html})
         else:
             form_errors = {'error': str(form.errors)}
             return JsonResponse({'error': 'Ordered item with this Item already exists for the current staff member.'})
@@ -102,7 +102,15 @@ def submit_order(request):
     if request.method == 'POST':
         staff = Staff.objects.get(staff_number=request.user.username)
         receiver = Receiver.objects.get(staff=staff)
-        ordered_items = staff.ordered_item
-        selected_supplier = reques.POST.get('supplier')
-
-    return render(request, 'staff/order.html')
+        try:
+            order = Order.objects.get(receiver=receiver, isDelivered=False)
+            order_number = order.order_number
+            order_supplier = order.supplier
+            order_receiver = order.receiver
+            ordered_items = order.ordered_items.all()
+            order_date = order.order_date
+            order_time = order.order_time
+        except Order.DoesNotExist:
+            print("No existing order found for the given criteria.")
+            return HttpResponse("No pending order found for current user.")
+    return render(request, 'staff/order/receipt.html', {'order_number': order_number, 'ordered_items': ordered_items, 'order_supplier': order_supplier, 'order_receiver': order_receiver, 'order_date': order_date, 'order_time': order_time})

@@ -103,16 +103,14 @@
             {% endfor %}
         </select>
         <input type="hidden" id="item" name="item">
-        <input type="hidden" id="selected_supplier" name="selected_supplier">
-
         <label for="order_quantity">Quantity: </label>
         <input type="number" id="order_quantity" name="order_quantity">
         <button type="button" onclick="addOrderItem()">Add Item</button>
     </form>
-
     <h1>Order list</h1>
     <div id="orderedItems">
     </div>
+
     <form method="post" action="{% url 'submit_order' %}">
         {% csrf_token %}
         <button type="submit">Generate Order Receipt</button>
