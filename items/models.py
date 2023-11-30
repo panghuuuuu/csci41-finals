@@ -48,6 +48,7 @@ class SoldItem(models.Model):
 
 class OrderedItem(models.Model):
     item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    order = models.ForeignKey('staff.Order', on_delete=models.CASCADE)
     order_quantity = models.IntegerField()
     staff_member = models.ForeignKey('staff.Receiver', on_delete=models.CASCADE)
     order_total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
@@ -59,7 +60,7 @@ class OrderedItem(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"OrderedItem: {self.item.item_brand} {self.order_quantity} pcs"
+        return f"{self.order.order_number}: {self.item.item_brand} {self.order_quantity} pcs"
 
 class DeliveredItem(models.Model):
     item = models.OneToOneField(Item, on_delete = models.CASCADE)

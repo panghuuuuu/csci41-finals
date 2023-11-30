@@ -1,12 +1,14 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, HttpResponse, redirect
 from items.models import Item, OrderedItem
 from supplier.models import Supplier
 from .models import Staff, Receiver, Order
-from .forms import OrderForm, OrderedItemForm
+from .forms import OrderedItemForm
 from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 def login_view(request):
     if request.method == 'POST':
@@ -44,70 +46,71 @@ def get_items(request):
 def fetch_ordered_items(request):
     staff = Staff.objects.get(staff_number=request.user.username)
     receiver = Receiver.objects.get(staff=staff)
-    ordered_items = OrderedItem.objects.filter(staff_member=receiver)
-    return render(request, 'staff/order/ordered_item.html', {'ordered_items': ordered_items})
+    try:
+        order = Order.objects.get(receiver=receiver, isDelivered=False)
+        order_number = order.order_number
+        ordered_items = order.ordered_items.all()
+        return render(request, 'staff/order/ordered_item.html', {'ordered_items': ordered_items, 'order_number': order_number})
+    except Order.DoesNotExist:
+        print("No existing order found for the given criteria.")
+        return HttpResponse("No pending order found for current user.")
 
 def order_item(request):
-    suppliers = Supplier.objects.all()
-
-    ordered_items_key = f'ordered_items_{request.user.id}'
-    ordered_items = request.session.get(ordered_items_key, [])
     if request.method == 'POST':
         form = OrderedItemForm(request.POST, request=request)
         if form.is_valid():
             selected_item = form.cleaned_data['item']
             selected_quantity = form.cleaned_data['order_quantity']
-            selected_supplier = request.POST.get('supplier')
+            selected_supplier = selected_item.supplier
+            staff = Staff.objects.get(staff_number=request.user.username)
+            receiver = Receiver.objects.get(staff=staff)
             existing_item = None
-            for item_data in ordered_items:
-                if item_data['item']['number'] == selected_item.item_number:
-                    item_data['order_quantity'] = selected_quantity
-                    item_data['total_cost'] = float(selected_item.item_cost) * item_data['order_quantity']
-                    existing_item = item_data
-                    break
-            if existing_item:
-                existing_item['order_quantity'] = selected_quantity
-                existing_item['total_cost'] = float(selected_item.item_cost) * existing_item['order_quantity']
-            else:
-                total_cost = float(selected_item.item_cost) * selected_quantity
-                ordered_items.append({
-                    'item': {
-                        'number': selected_item.item_number,
-                        'brand': selected_item.item_brand,
-                        'model': selected_item.item_model,
-                    },
-                    'order_quantity': selected_quantity,
-                    'total_cost': total_cost,
-                })
-                staff = Staff.objects.get(staff_number=request.user.username)
-                receiver = Receiver.objects.get(staff=staff)
-                order_instance = Order.objects.create(staff=staff, supplier=selected_supplier)
+            existing_order = Order.objects.filter(receiver=receiver, isDelivered=False).first()
+            total_cost = float(selected_item.item_cost) * selected_quantity
 
-                order_item_instance = OrderedItem.objects.create(
-                    item=selected_item,
-                    order_quantity=selected_quantity,
-                    staff_member=receiver
-                )
-
-                order_instance.ordered_items.add(order_item_instance)
-
-            request.session[ordered_items_key] = ordered_items
+            if existing_order:
+                for item in existing_order.ordered_items.all():
+                    if selected_item == item:
+                        existing_item = item
+                        break
+                if existing_item:
+                    return JsonResponse({'error': 'Ordered item with this Item already exists for the current staff member.'})
+                
+                order_instance = existing_order
+            else:              
+                order_instance = Order.objects.create(receiver=receiver, supplier=selected_supplier)
+            
+            order_item_instance = OrderedItem.objects.create(
+                item=selected_item,
+                order=order_instance,
+                order_quantity=selected_quantity,
+                staff_member=receiver,
+                order_total_cost=total_cost
+            )
+            order_instance.ordered_items.add(order_item_instance)
+            ordered_items = order_instance.ordered_items.all()
+            
+            ordered_items_html = render_to_string('staff/order/ordered_item.html', {'ordered_items': ordered_items, 'order_number': order_instance.order_number})
+            return JsonResponse({'ordered_items_html': ordered_items_html})
         else:
-            print(f"Form Errors: {form.errors}")
-    else:
-        form = OrderedItemForm(request=request)
+            form_errors = {'error': str(form.errors)}
+            return JsonResponse({'error': 'Ordered item with this Item already exists for the current staff member.'})
 
     return render(request, 'staff/order/ordered_item.html', {'ordered_items': ordered_items})
 
 def submit_order(request):
     if request.method == 'POST':
-            staff_member = orm.cleaned_data['staff_member']
-
-            order = Order(staff=staff_member)
-            order.save()
-            ordered_items = request.session.get('ordered_items', [])
-            order.ordered_items.set(ordered_items)
-
-            request.session.pop('ordered_items', None)
-            return redirect('success_page')
-    return render(request, 'staff/order.html')
+        staff = Staff.objects.get(staff_number=request.user.username)
+        receiver = Receiver.objects.get(staff=staff)
+        try:
+            order = Order.objects.get(receiver=receiver, isDelivered=False)
+            order_number = order.order_number
+            order_supplier = order.supplier
+            order_receiver = order.receiver
+            ordered_items = order.ordered_items.all()
+            order_date = order.order_date
+            order_time = order.order_time
+        except Order.DoesNotExist:
+            print("No existing order found for the given criteria.")
+            return HttpResponse("No pending order found for current user.")
+    return render(request, 'staff/order/receipt.html', {'order_number': order_number, 'ordered_items': ordered_items, 'order_supplier': order_supplier, 'order_receiver': order_receiver, 'order_date': order_date, 'order_time': order_time})
