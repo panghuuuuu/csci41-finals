@@ -99,4 +99,10 @@ def order_item(request):
     return render(request, 'staff/order/ordered_item.html', {'ordered_items': ordered_items})
 
 def submit_order(request):
+    if request.method == 'POST':
+        staff = Staff.objects.get(staff_number=request.user.username)
+        receiver = Receiver.objects.get(staff=staff)
+        ordered_items = staff.ordered_item
+        selected_supplier = reques.POST.get('supplier')
+
     return render(request, 'staff/order.html')

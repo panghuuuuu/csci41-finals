@@ -114,11 +114,13 @@
     <div id="orderedItems">
     </div>
     <form method="post" action="{% url 'submit_order' %}">
+        {% csrf_token %}
         <button type="submit">Generate Order Receipt</button>
     </form>
 
     <form method="post" action="{% url 'logout_view' %}">
         {% csrf_token %}
+        <input type="hidden" id="selected_supplier" name="selected_supplier">
         <button type="submit">Logout</button>
     </form>
 
