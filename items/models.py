@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from supplier.models import Supplier
 # Create your models here.
 class Item(models.Model):
@@ -26,6 +27,10 @@ class Item(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=True, blank=True, default='temp_default_value')
     
     def save(self, *args, **kwargs):
+        existing_item = Item.objects.filter(item_brand=self.item_brand, supplier=self.supplier, item_model=self.item_model).exclude(item_number=self.item_number).first()
+        if existing_item:
+            raise ValidationError("An item with the same brand already exists under this supplier.")
+
         if self.item_total_cost is not None:
             self.item_total_cost = self.item_cost * self.item_qty
         else:
