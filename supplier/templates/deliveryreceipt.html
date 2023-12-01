@@ -1,0 +1,18 @@
+<h3> Delivery Receipt </h3>
+<ul>
+    <p>Delivery number: {{ delivery_number }}</p>
+    <p>Delivery Date: {{ delivery_date }}</p>
+    <p>Delivery Time: {{ delivery_time }}</p>
+    <p>Receiver: {{ delivery_receiver }}</p>
+    <p>Supplier: {{ delivery_supplier }}</p>
+    <p>Delivered Items</p>
+    {% for delivered_item in delivered_items.all %}
+    <li>{{ delivered_item.item.item_brand}} {{ delivered_item.item.item_model}} <br>
+        Quantity: {{delivered_item.deliver_quantity}}
+        <br>
+        Cost: {{delivered_item.item.item_cost }}
+        <br>
+        Total: {{delivered_item.order_total_cost}}
+    </li>
+    {% endfor %}
+</ul>

@@ -9,7 +9,7 @@ class Supplier(models.Model):
 class Delivery(models.Model):
     delivery_number = models.AutoField(primary_key=True, unique=True)
     order = models.ForeignKey("staff.Order", on_delete=models.CASCADE, null=True, blank=True, related_name='delivered_items')
-    delivered_items = models.ManyToManyField("items.DeliveredItem", related_name='orders')
+    delivered_items = models.ManyToManyField("items.OrderedItem", related_name='deliveries')
     delivery_date = models.DateField(auto_now_add=True)
     delivery_time = models.TimeField(auto_now_add=True)
     

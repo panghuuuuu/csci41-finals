@@ -8,12 +8,17 @@
 </head>
 
 <body>
+    <form method="post" action="{% url 'mark_delivered' %}">
+    {% csrf_token %}
     <h2>Deliveries</h2>
+    <ul>
     {% for order in orders %}
-    <li>Order: {{ order }} Receiver: {{ order.receiver }} Supplier: {{ order.supplier }}</li>
+    <li>Order: {{ order }} Receiver: {{ order.receiver }} Supplier: {{ order.supplier }}
+    <button name="order_number" value="{{ order.order_number }}" type="submit">Mark as Delivered</button></li>
     {% endfor %}
-    <button type="submit">Mark as Delivered</button>
+    </ul>
     </form>
+
 </body>
 
 </html>

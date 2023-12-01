@@ -13,6 +13,6 @@ class Delivery(models.Model):
     item = models.OneToOneField(OrderedItem, on_delete = models.CASCADE)
     delivered_quantity = models.IntegerField(default=0)
 
-    #get supplier of the order
+    # get supplier of the order
     # def get_supplier(self):
     #     return self.items.supplier if self.items else None
