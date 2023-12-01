@@ -63,11 +63,10 @@ class OrderedItem(models.Model):
         return f"{self.order.order_number}: {self.item.item_brand} {self.order_quantity} pcs"
 
 class DeliveredItem(models.Model):
-    item = models.OneToOneField(Item, on_delete = models.CASCADE)
-    delivered_quantity = models.IntegerField()
+    order = models.ForeignKey('OrderedItem', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"DeliveredItem: {self.item.item_brand}: {self.delivered_quantity} pcs"
+        return f"DeliveredItem: {self.order.item.item_brand}: {self.order.order_quantity} pcs"
 
 class IssuedItem(models.Model):
     item = models.OneToOneField(Item, on_delete = models.CASCADE)
