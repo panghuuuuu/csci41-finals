@@ -1,9 +1,10 @@
 from django.shortcuts import render, HttpResponse
 from staff.models import Order
 from .models import Delivery
+from items.models import DeliveredItem
 
 def get_orders(request):
-    orders = Order.objects.all()
+    orders = Order.objects.filter(isDelivered=False)
     return render(request, 'deliveries.html', {'orders': orders})
 
 def mark_delivered(request):
@@ -13,13 +14,17 @@ def mark_delivered(request):
             order = Order.objects.get(order_number=order_number)
             ordered_items = order.ordered_items.all()
             delivery_instance = Delivery.objects.create(order=order)
-            delivery_instance.delivered_items.set(ordered_items)
+            for order_item in ordered_items:
+                delivered_item = DeliveredItem.objects.create(order=order_item)
+                delivery_instance.delivered_items.add(delivered_item)
             delivery_number = delivery_instance.delivery_number
             delivery_supplier = delivery_instance.order.supplier
             delivery_receiver = delivery_instance.order.receiver
             delivered_items = delivery_instance.delivered_items.all()
             delivery_date = delivery_instance.delivery_date
             delivery_time = delivery_instance.delivery_time
+            order.isDelivered = True
+            order.save()
         except Order.DoesNotExist:
             print("Order number does not exist.")
             return HttpResponse("No valid order number is found.")
