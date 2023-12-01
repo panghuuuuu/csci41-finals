@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 from items.models import Item, OrderedItem
 from supplier.models import Supplier
 
@@ -62,4 +63,4 @@ class Order(models.Model):
     isDelivered = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.order_number} {self.order_date}"
+        return f"{self.order_number} {self.order_date} {self.order_time}"

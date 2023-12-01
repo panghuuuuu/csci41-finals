@@ -62,11 +62,21 @@ def order_item(request):
             selected_item = form.cleaned_data['item']
             selected_quantity = form.cleaned_data['order_quantity']
             selected_supplier = selected_item.supplier
+            
+            supplier_item = Item.objects.get(item_number=selected_item.item_number)
+
             staff = Staff.objects.get(staff_number=request.user.username)
             receiver = Receiver.objects.get(staff=staff)
             existing_item = None
             existing_order = Order.objects.filter(receiver=receiver, isDelivered=False).first()
             total_cost = float(selected_item.item_cost) * selected_quantity
+
+            if selected_quantity > supplier_item.item_qty:
+                return JsonResponse({'error': 'Inputted quantity is more than supplier\'s inventory.'})
+            else:
+                supplier_item.item_qty -= selected_quantity
+                supplier_item.save()              
+
             if existing_order:
                 for item in existing_order.ordered_items.all():
                     if selected_item == item:
@@ -76,7 +86,7 @@ def order_item(request):
                     return JsonResponse({'error': 'Ordered item with this Item already exists for the current staff member.'})
                 
                 order_instance = existing_order
-            else:              
+            else:
                 order_instance = Order.objects.create(receiver=receiver, supplier=selected_supplier)
             
             order_item_instance = OrderedItem.objects.create(
