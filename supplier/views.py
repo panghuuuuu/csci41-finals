@@ -1,7 +1,7 @@
 from django.shortcuts import render, HttpResponse
 from staff.models import Order
-from .models import Delivery
-from items.models import DeliveredItem
+from .models import Delivery, Supplier
+from items.models import Item, DeliveredItem
 
 def get_orders(request):
     orders = Order.objects.filter(isDelivered=False)
@@ -29,3 +29,15 @@ def mark_delivered(request):
             print("Order number does not exist.")
             return HttpResponse("No valid order number is found.")
     return render(request, 'deliveryreceipt.html', {'delivery_number': delivery_number, 'delivery_supplier': delivery_supplier, 'delivery_receiver': delivery_receiver, 'delivered_items': delivered_items, 'delivery_date': delivery_date, 'delivery_time': delivery_time})
+
+def get_supplier_inventory(request):
+    suppliers = Supplier.objects.all()
+    selected_supplier = None
+    items = None
+
+    supplier_name = request.GET.get('supplier')
+    if supplier_name:
+        selected_supplier = Supplier.objects.get(pk=supplier_name)
+        items = Item.objects.filter(supplier=supplier_name)
+
+    return render(request, 'allinventory.html', {'suppliers': suppliers, 'selected_supplier': selected_supplier, 'items': items})
