@@ -23,6 +23,4 @@ class OrderedItemForm(forms.ModelForm):
                 receiver = Receiver.objects.get(staff=staff)
             except Receiver.DoesNotExist:
                 raise forms.ValidationError("Receiver not found for the current user.")
-            if OrderedItem.objects.filter(item=item, staff_member=receiver).exists():
-                raise forms.ValidationError("Ordered item with this Item already exists for the current staff member.")
         return cleaned_data

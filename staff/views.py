@@ -67,7 +67,6 @@ def order_item(request):
             existing_item = None
             existing_order = Order.objects.filter(receiver=receiver, isDelivered=False).first()
             total_cost = float(selected_item.item_cost) * selected_quantity
-
             if existing_order:
                 for item in existing_order.ordered_items.all():
                     if selected_item == item:
