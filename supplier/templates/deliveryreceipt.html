@@ -7,12 +7,12 @@
     <p>Supplier: {{ delivery_supplier }}</p>
     <p>Delivered Items</p>
     {% for delivered_item in delivered_items.all %}
-    <li>{{ delivered_item.order.item.item_brand}} {{ delivered_item.order.item.item_model}} <br>
-        Quantity: {{delivered_item.order.order_quantity}}
+    <li>{{ delivered_item.ordered_item.item}}
+        Quantity: {{delivered_item.ordered_item.order_quantity}}
         <br>
-        Cost: {{delivered_item.order.item.item_cost }}
+        Cost: {{delivered_item.ordered_item.item.supplier_item_cost }}
         <br>
-        Total: {{delivered_item.order.order_total_cost}}
+        Total: {{delivered_item.ordered_item.order_total_cost}}
     </li>
     {% endfor %}
 </ul>

@@ -1,7 +1,8 @@
 <h2>Order Number: {{ order_number }}</h2>
 <ul>
     {% for ordered_item in ordered_items %}
-    <li>{{ ordered_item.item.item_brand}} {{ ordered_item.item.item_model}} Quantity: {{ordered_item.order_quantity}}
+    <li>{{ ordered_item.item.supplier_item_brand}} {{ ordered_item.item.supplier_item_model}} Quantity:
+        {{ordered_item.order_quantity}}
         Total
         Cost: {{ordered_item.order_total_cost}}</li>
     {% endfor %}

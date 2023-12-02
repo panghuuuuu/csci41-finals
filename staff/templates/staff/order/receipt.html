@@ -6,10 +6,10 @@
     <p>Supplier: {{ order_supplier }}</p>
     <p>Items</p>
     {% for ordered_item in ordered_items.all %}
-    <li>{{ ordered_item.item.item_brand}} {{ ordered_item.item.item_model}} <br>
+    <li>{{ ordered_item.item.supplier_item_brand}} {{ ordered_item.item.supplier_item_model}} <br>
         Quantity: {{ordered_item.order_quantity}}
         <br>
-        Cost: {{ordered_item.item.item_cost }}
+        Cost: {{ordered_item.item.supplier_item_cost }}
         <br>
         Total: {{ordered_item.order_total_cost}}
     </li>

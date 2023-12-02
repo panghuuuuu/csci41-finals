@@ -1,11 +1,11 @@
 from django.contrib import admin
-from .models import Item, SoldItem, DeliveredItem, IssuedItem, ReturnedItem, BatchInventory, ItemType, OrderedItem
+from .models import SupplierItem, Item, SoldItem, DeliveredItem, IssuedItem, ReturnedItem, BatchInventory, ItemType, OrderedItem
 
-class ItemAdmin(admin.ModelAdmin):
-    list_display = ('item_number', 'item_brand', 'item_model', 'item_qty', 'item_type', 'item_cost', 'item_SRP', 'item_total_cost', 'supplier')
-    search_fields = ('item_brand', 'item_model', 'item_type')
+class SupplierItemAdmin(admin.ModelAdmin):
+    list_display = ('supplier_item_number', 'supplier_item_brand', 'supplier_item_model', 'supplier_item_qty', 'supplier_item_type', 'supplier_item_cost', 'supplier_item_total_cost', 'supplier')
+    search_fields = ('supplier_item_brand', 'supplier_item_model', 'supplier_item_type')
 class DeliveredItemAdmin(admin.ModelAdmin):
-    list_display = ('order',)
+    list_display = ('ordered_item',)
 @admin.register(SoldItem, IssuedItem, ReturnedItem, OrderedItem)
 class ItemTransactionAdmin(admin.ModelAdmin):
     def get_quantity(self, obj):
@@ -27,13 +27,10 @@ class ItemTransactionAdmin(admin.ModelAdmin):
 
     get_quantity.short_description = 'Quantity'
 
-class BatchInventoryAdmin(admin.ModelAdmin):
-    filter_horizontal = ('batch_inventory',)
-
 class ItemTypeAdmin(admin.ModelAdmin):
-    list_display = ('item_id', 'item_type_name', 'discount_rate')
+    list_display = ('item_type', 'item_discount', 'item_client')
 
-admin.site.register(Item, ItemAdmin)
-admin.site.register(BatchInventory, BatchInventoryAdmin)
+admin.site.register(SupplierItem, SupplierItemAdmin)
+# admin.site.register(Item, ItemAdmin)
 admin.site.register(ItemType, ItemTypeAdmin)
 admin.site.register(DeliveredItem, DeliveredItemAdmin)

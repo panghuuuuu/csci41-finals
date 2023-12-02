@@ -1,7 +1,7 @@
 from django.shortcuts import render, HttpResponse
 from staff.models import Order
 from .models import Delivery
-from items.models import DeliveredItem
+from items.models import DeliveredItem, OrderedItem
 
 def get_orders(request):
     orders = Order.objects.filter(isDelivered=False)
@@ -12,15 +12,14 @@ def mark_delivered(request):
         order_number = request.POST.get('order_number')
         try:
             order = Order.objects.get(order_number=order_number)
-            ordered_items = order.ordered_items.all()
+            ordered_items = OrderedItem.objects.filter(order=order)
             delivery_instance = Delivery.objects.create(order=order)
             for order_item in ordered_items:
-                delivered_item = DeliveredItem.objects.create(order=order_item)
-                delivery_instance.delivered_items.add(delivered_item)
+                delivered_item = DeliveredItem.objects.create(ordered_item=order_item, delivery=delivery_instance)
             delivery_number = delivery_instance.delivery_number
             delivery_supplier = delivery_instance.order.supplier
             delivery_receiver = delivery_instance.order.receiver
-            delivered_items = delivery_instance.delivered_items.all()
+            delivered_items = DeliveredItem.objects.filter(delivery=delivery_instance)
             delivery_date = delivery_instance.delivery_date
             delivery_time = delivery_instance.delivery_time
             order.isDelivered = True

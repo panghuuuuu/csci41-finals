@@ -72,16 +72,15 @@
 
     {% if selected_supplier %}
     <h2>Items for {{ selected_supplier }}</h2>
-    {% if items %}
+    {% if supplier_items %}
     <dl>
-        {% for item in items %}
+        {% for item in supplier_items %}
         <dd>
             <p>{{item}}</p>
             <ul>
-                <li>Quantity Available: {{item.item_qty}}</li>
-                <li>Item Type: {{item.item_type}}</li>
-                <li>Unit Cost: {{item.item_cost}}</li>
-                <li>Unit SRP: {{item.item_SRP}}</li>
+                <li>Quantity Available: {{item.supplier_item_qty}}</li>
+                <li>Item Type: {{item.supplier_item_type}}</li>
+                <li>Unit Cost: {{item.supplier_item_cost}}</li>
             </ul>
         </dd>
         {% endfor %}
@@ -98,8 +97,8 @@
 
         <label for="items">Item: </label>
         <select id="items" name="items">
-            {% for item in items %}
-            <option value="{{ item.item_number }}">{{ item }}</option>
+            {% for item in supplier_items %}
+            <option value="{{ item.supplier_item_number }}">{{ item }}</option>
             {% endfor %}
         </select>
         <input type="hidden" id="item" name="item">
