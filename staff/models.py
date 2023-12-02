@@ -38,6 +38,7 @@ class Staff(models.Model):
             user.save()
         elif self.staff_type == 'Issuer':
             Issuer.objects.create(staff=self)
+
 class Receiver(models.Model):
     staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
     receiver_number = models.AutoField(primary_key=True)
