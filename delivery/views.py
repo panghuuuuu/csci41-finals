@@ -1,21 +1,77 @@
 from django.shortcuts import render
-
-from items.models import DeliveryReceipt
+from django.utils.datetime_safe import datetime
+from django.db.models import Q
+from supplier.models import Delivery
 
 def filter_view(request):
-    qs = DeliveryReceipt.objects.all()
-    byItem_query = request.GET.get('search_by_item')
+    qs = Delivery.objects.select_related('order__receiver', 'order__supplier')
+    showAll_query = request.GET.get('show_all')
+    byDeliveryNumber_query = request.GET.get('search_by_deliverynumber')
+    byItemModel_query = request.GET.get('search_by_item_model')
+    byItemBrand_query = request.GET.get('search_by_item_brand')
     byItemType_query = request.GET.get('search_by_item_type')
     byDate_query = request.GET.get('search_by_date')
-    
-    if byItem_query != '':
-        qs = qs.filter(title__icontains = byItem_query)
+    byReceiver_query = request.GET.get('search_by_receiver')
+    bySupplier_query = request.GET.get('search_by_supplier')
 
-    elif byItemType_query != '':
-        qs = qs.filter(title__icontains = byItemType_query)
+    if byItemModel_query and byItemBrand_query:
+        try:
+            if byItemModel_query and byItemBrand_query:
+                qs = qs.filter(
+                    Q(delivered_items__order__item__item_model__icontains = byItemModel_query) &
+                    Q(delivered_items__order__item__item_brand__icontains = byItemBrand_query)
+                )
+
+                if not qs.exists():
+                    raise ValueError()
+        except ValueError:
+            print("No matching records for this item is found.")
+
+    elif byDeliveryNumber_query:
+        try:
+            qs = qs.filter(delivery_number = byDeliveryNumber_query)
+            if not qs.exists():
+                raise ValueError()
+        except ValueError:
+            print("No matching records for this delivery number is found.")
+
+    elif byItemType_query:
+        try: 
+            qs = qs.filter(delivered_items__order__item__item_type__icontains = byItemType_query)
+            if not qs.exists():
+                raise ValueError()
+
+        except ValueError:
+            print("No matching records for this item type is found.")
+
         
-    elif byDate_query != '':
-        qs = qs.filter(title__icontains = byDate_query)    
+    elif byDate_query:
+        try:
+            qs = qs.filter(delivery_date = datetime.strptime(byDate_query, '%b. %d, %Y'))
+            if not qs.exists():
+                raise ValueError()
+        except ValueError:
+            print("Invalid format. Enter the date in the format 'Mon. DD, YYYY'.")
+
+# change these to gabi's code for view all inventory (supplier side) AND view delivered items (staff + supplier)
+    # elif byReceiver_query:
+    #     try:
+    #         qs = qs.filter(order__receiver = byReceiver_query)
+    #         if not qs.exists():
+    #             raise ValueError()
+    #     except ValueError:
+    #         print("Receiver does not exist.")
+
+    # elif bySupplier_query:
+    #     try:
+    #         qs = qs.filter(order__supplier = bySupplier_query)
+    #         if not qs.exists():
+    #             raise ValueError()
+    #     except ValueError:
+    #         print("Supplier does not exist.")
+    
+    elif showAll_query:
+        pass    
     
     context = {
         'queryset': qs
