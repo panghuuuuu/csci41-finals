@@ -1,18 +1,15 @@
 from django.db import models
 
-from items.models import OrderedItem
+from items.models import DeliveredItem
 from staff.models import Receiver
-from supplier.models import Supplier
+from supplier.models import Supplier, Delivery
 
 class Delivery(models.Model):
-    delivery_number = models.AutoField(primary_key = True)
-    date = models.CharField(max_length = 100)
-    time = models.CharField(max_length = 15)
-    receiver = models.ForeignKey(Receiver, on_delete = models.CASCADE)
-    supplier = models.ForeignKey(Supplier, on_delete = models.CASCADE)
-    item = models.OneToOneField(OrderedItem, on_delete = models.CASCADE)
-    delivered_quantity = models.IntegerField(default=0)
-
-    # get supplier of the order
-    # def get_supplier(self):
-    #     return self.items.supplier if self.items else None
+    delivery_number = models.AutoField(primary_key=True, unique=True)
+    order = models.ForeignKey("staff.Order", on_delete=models.CASCADE, null=True, blank=True, related_name='delivered_orders')
+    delivered_items = models.ManyToManyField("items.DeliveredItem", related_name='delivered_items')
+    delivery_date = models.DateField(auto_now_add=True)
+    delivery_time = models.TimeField(auto_now_add=True)
+            
+    def __str__(self):
+        return f"{self.delivery_number} {self.delivery_date}"
