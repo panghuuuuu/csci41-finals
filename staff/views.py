@@ -4,7 +4,7 @@ from supplier.models import Supplier
 from client.models import Client
 from agent.models import Agent
 from .models import Staff, Receiver, Issuer, Order, Issuance, BatchInventory
-from .forms import OrderedItemForm, IssuanceItemForm
+from .forms import OrderedItemForm, IssuanceItemForm, TransferItemForm
 from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -69,14 +69,18 @@ def get_inventory_and_issued_items(request):
     issuer = Issuer.objects.get(staff=staff)
 
     try:
-        issuance = Issuance.objects.filter(issuer=issuer, active=True).first()
-        batch_number = issuance.batch_number
-        issued_items = IssuedItem.objects.filter(batch_number=batch_number)
-        return render(request, 'staff/issuance.html', {'clients': clients, 'selected_client': selected_client, 'client_agents': client_agents, 'issued_items': issued_items, 'batch_number': batch_number, 'items': items})
+        issuance = Issuance.objects.filter(issuer=issuer, isActive=True).first()
+        if issuance:
+            batch_number = issuance.batch_number
+            issued_items = IssuedItem.objects.filter(batch_number=batch_number)
+        else:
+            batch_number = None
+            issued_items = []
     except Issuance.DoesNotExist:
-        print("No existing issuance found for the given criteria.")
-        return HttpResponse("No pending order found for current user.")
+        batch_number = None
+        issued_items = []
 
+    return render(request, 'staff/issuance.html', {'clients': clients, 'selected_client': selected_client, 'client_agents': client_agents, 'issued_items': issued_items, 'batch_number': batch_number, 'items': items})
 
 def fetch_ordered_items(request):
     staff = Staff.objects.get(staff_number=request.user.username)
@@ -87,7 +91,6 @@ def fetch_ordered_items(request):
         ordered_items = OrderedItem.objects.filter(order=order)
         return render(request, 'staff/order/ordered_item.html', {'ordered_items': ordered_items, 'order_number': order_number})
     except Order.DoesNotExist:
-        print("No existing order found for the given criteria.")
         return HttpResponse("No pending order found for current user.")
 
 def order_item(request):
@@ -152,7 +155,6 @@ def submit_order(request):
             order_date = order.order_date
             order_time = order.order_time
         except Order.DoesNotExist:
-            print("No existing order found for the given criteria.")
             return HttpResponse("No pending order found for current user.")
     return render(request, 'staff/order/receipt.html', {'order_number': order_number, 'ordered_items': ordered_items, 'order_supplier': order_supplier, 'order_receiver': order_receiver, 'order_date': order_date, 'order_time': order_time})
 
@@ -173,10 +175,9 @@ def issue_item(request):
 
             agent_instance = Agent.objects.get(agent_number=agent)
             client_instance = Client.objects.get(client_name=client)
-            print(agent_instance)
 
             existing_item = None
-            existing_issuance = Issuance.objects.filter(issuer=issuer, active=True).first()
+            existing_issuance = Issuance.objects.filter(issuer=issuer, isActive=True).first()
 
             if not item:
                 return JsonResponse({'error': 'Item does not exist.'})
@@ -221,7 +222,7 @@ def submit_issuance(request):
         staff = Staff.objects.get(staff_number=request.user.username)
         issuer = Issuer.objects.get(staff=staff)
         try:
-            issuance = Issuance.objects.get(issuer=issuer, active=True)
+            issuance = Issuance.objects.get(issuer=issuer, isActive=True)
             batch_number = issuance.batch_number
             agent = issuance.agent
             client = issuance.client
@@ -229,7 +230,59 @@ def submit_issuance(request):
             issued_items= IssuedItem.objects.filter(batch_number=batch_number)            
             issue_date = issuance.issue_date
             issue_time = issuance.issue_time
-        except Order.DoesNotExist:
-            print("No existing issuance found for the given criteria.")
-            return HttpResponse("No pending order found for current user.")
+        except Issuance.DoesNotExist:
+            return HttpResponse("No pending issuance form found for current user.")
     return render(request, 'staff/issuance/issuance_form.html', {'batch_number': batch_number, 'agent': agent, 'client': client, 'issuer': issuer, 'issued_items': issued_items, 'issue_date': issue_date, 'issue_time': issue_time})
+
+def fetch_batch_items(request):
+    batches = Issuance.objects.all()
+    source_batch_number = None
+    receiver_batch_number = None
+    source_batch = None
+    receiver_batch = None
+    
+    source = request.GET.get('source')
+    receiver = request.GET.get('receiver')
+    
+    try:
+        source_batch_number = source
+        source_batch = IssuedItem.objects.filter(batch_number=source)
+    except Issuance.DoesNotExist:
+        source_batch = None
+
+    try:
+        receiver_batch_number = receiver
+        receiver_batch = IssuedItem.objects.filter(batch_number=receiver)
+    except Issuance.DoesNotExist:
+        receiver_batch = None
+
+    return render(request, 'staff/transfer.html', {'source_batch': source_batch, 'receiver_batch': receiver_batch, 'batches': batches, 'receiver_batch_number': receiver_batch_number, 'source_batch_number': source_batch_number})
+
+
+def transfer_items(request):
+    if request.method == 'POST':
+        form = TransferItemForm(request.POST, request=request)
+        if form.is_valid():
+            receiver_batch_number = form.cleaned_data['receiver_batch_number']
+            source_batch_number = form.cleaned_data['batch_number']
+            item = form.cleaned_data['item']
+            try:
+                transferred_item = IssuedItem.objects.get(batch_number=source_batch_number, item=item)
+            except IssuedItem.DoesNotExist:
+                return HttpResponse("No matching issued item found.")
+
+            transferred_item.batch_number = receiver_batch_number
+            transferred_item.save()
+            receiver_batch = IssuedItem.objects.filter(batch_number=receiver_batch_number)
+            source_batch = IssuedItem.objects.filter(batch_number=source_batch_number)
+            return render(request, 'staff/transfer/transfer_items.html', {'receiver_batch': receiver_batch, 'source_batch': source_batch})
+
+        else:
+            form_errors = {'error': str(form.errors)}
+            print(form_errors)  # Add this line for debugging
+            return JsonResponse(form_errors, status=400)
+            
+
+
+
+                

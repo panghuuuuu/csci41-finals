@@ -82,7 +82,7 @@ class Item(models.Model):
     item_type = models.CharField(max_length=300, choices=ITEM_TYPE_CHOICES)
     
     def __str__(self):
-        return f"{self.item_brand} {self.item_model} : Quantity: {self.item_qty}"
+        return f"{self.item_brand} {self.item_model}"
 
 
 class OrderedItem(models.Model):

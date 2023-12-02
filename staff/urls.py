@@ -8,6 +8,9 @@ urlpatterns = [
     path('issuance/', get_inventory_and_issued_items, name='get_inventory_and_issued_items'),
     path('issuance/submit_issuance', submit_issuance, name='submit_issuance'),
     path('issuance/issue_item/', issue_item, name='issue_item'),
+    path('transfer/', fetch_batch_items, name='fetch_batch_items'),
+    path('transfer/transfer_items/', transfer_items, name='transfer_items'),
+
     path('login/', login_view, name='login_view'),  
     path('logout/', logout_view, name='logout_view'),
     path('fetch_ordered_items/', fetch_ordered_items, name='fetch_ordered_items'),

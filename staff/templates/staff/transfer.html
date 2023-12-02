@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Page</title>
+    <script>
+        window.addEventListener('load', function () {
+            fetchBatchItems();
+        });
+        function transferItem() {
+            var selectedItem = document.getElementById("items_list").value;
+            document.getElementById("item").value = selectedItem;
+            var selectedSource = document.getElementById("source").value;
+            var selectedReceiver = document.getElementById("receiver").value;
+            document.getElementById("batch_number").value = selectedSource;
+            document.getElementById("receiver_batch_number").value = selectedReceiver;
+            var form = document.getElementById('transferItemForm');
+            var formData = new FormData(form);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', form.getAttribute('data-url'), true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.onload = function () {
+                console.log(xhr.responseText);
+                if (xhr.status >= 200 && xhr.status < 400) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        alert(response.error);
+                    } else {
+                        document.getElementById('transferItems').innerHTML = response.transfer_items_html;
+
+                    }
+                } else {
+                    console.error("Error adding order item");
+                }
+            };
+            xhr.send(formData);
+        }
+
+        function fetchBatchItems() {
+            var selectedSource = document.getElementById("source").value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', "{% url 'fetch_batch_items' %}?source=" + selectedSource, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 400) {
+                    var response = JSON.parse(xhr.responseText);
+
+                } else {
+                    console.error("Error fetching batch items");
+                }
+            };
+
+            xhr.send();
+        }
+
+
+
+    </script>
+
+</head>
+
+<body>
+    <h1>Transfer Page</h1>
+    <form method="get" action="{% url 'fetch_batch_items' %}">
+        <label for="source">Select Source Batch:</label>
+        <select name="source" id="source">
+            {% for batch in batches %}
+            <option value="{{ batch.batch_number }}">{{ batch.batch_number }}</option>
+            {% endfor %}
+        </select>
+
+        <h2>Items for Batch: {{ source_batch_number }}</h2>
+        <ul>
+            {% for item in source_batch %}
+            <li>{{ item.item }} Quantity: {{item.issued_quantity}}</li>
+            {% endfor %}
+        </ul>
+
+        <label for="receiver">Select Receiver Batch:</label>
+        <select name="receiver" id="receiver">
+            {% for batch in batches %}
+            <option value="{{ batch.batch_number }}">{{ batch.batch_number }}</option>
+            {% endfor %}
+        </select>
+
+        <h2>Items for Batch: {{ receiver_batch_number }}</h2>
+        <ul>
+            {% for item in receiver_batch %}
+            <li>{{ item.item }} Quantity: {{item.issued_quantity}}</li>
+            {% endfor %}
+        </ul>
+
+        <button type="submit" onclick="fetchBatchItems()">View Items</button>
+    </form>
+
+    <form method="post" id="transferItemForm" data-url="{% url 'transfer_items' %}">
+        {% csrf_token %}
+        {{ form.errors }}
+
+        <label for="items_list">Item: </label>
+        <select id="items_list" name="items_list">
+            {% for item in source_batch %}
+            <option value="{{ item.item.item_number }}">{{ item.item }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" id="item" name="item">
+        <input type="hidden" id="batch_number" name="batch_number">
+        <input type="hidden" id="receiver_batch_number" name="receiver_batch_number">
+
+        <button type="button" onclick="transferItem()">Transfer Item</button>
+    </form>
+    <h1>Transfer list</h1>
+    <div id="transferItems">
+    </div>
+</body>
+
+</html>

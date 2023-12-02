@@ -74,10 +74,9 @@ class Issuance(models.Model):
     issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=False, blank=False)
     agent = models.ForeignKey(Agent, on_delete=models.CASCADE)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
-
     issue_date = models.DateField(auto_now_add=True)
     issue_time = models.TimeField(auto_now_add=True)
-    active = models.BooleanField(default=True)
+    isActive = models.BooleanField(default=True)
     
     def verify_agent(self):
         if self.agent.client != self.client:
@@ -86,4 +85,11 @@ class Issuance(models.Model):
         self.verify_agent()
         super().save(*args, **kwargs)
 
+class Transfer(models.Model):
+    receiver_batch_number = models.ForeignKey(BatchInventory, on_delete=models.CASCADE, null=False, blank=False, related_name="receiver_batch_number")
+    source_batch_number = models.ForeignKey(BatchInventory, on_delete=models.CASCADE, null=False, blank=False, related_name="source_batch_number")
 
+class Sales(models.Model):
+    invoice_number = models.AutoField(primary_key=True, unique=True)
+    sales_date = models.DateField(auto_now_add=True)
+    sales_time = models.TimeField(auto_now_add=True)
