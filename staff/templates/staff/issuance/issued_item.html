@@ -1,0 +1,15 @@
+{% if issued_items %}
+<h2>Batch Number: {{ batch_number }}</h2>
+<ul>
+    {% for issued_item in issued_items %}
+    <li>
+        {{ issued_item.item.item_brand }} {{ issued_item.item.item_model }}
+        Quantity: {{ issued_item.issued_quantity }}
+        SRP: {{ issued_item.issued_SRP }}
+    </li>
+    {% endfor %}
+</ul>
+
+{% else %}
+<p>No issued items to display.</p>
+{% endif %}

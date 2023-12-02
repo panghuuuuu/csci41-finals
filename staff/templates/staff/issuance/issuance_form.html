@@ -1,0 +1,16 @@
+<ul>
+    <p>Batch number: {{ batch_number }}</p>
+    <p>Issue Date: {{ issue_date }}</p>
+    <p>Issue Time: {{ issue_time }}</p>
+    <p>Agent: {{ agent }}</p>
+    <p>Client: {{ client }}</p>
+    <p>Issuer: {{ issuer }}</p>
+
+    <p>Items</p>
+    {% for issued_item in issued_items %}
+    <li>{{ issued_item.item.item_brand }} {{ issued_item.item.item_model }}
+        Quantity: {{ issued_item.issued_quantity }}
+        SRP: {{ issued_item.issued_SRP }}
+    </li>
+    {% endfor %}
+</ul>

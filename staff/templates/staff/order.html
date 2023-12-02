@@ -22,7 +22,6 @@
             var xhr = new XMLHttpRequest();
             xhr.open('POST', form.getAttribute('data-url'), true);
             xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-
             xhr.onload = function () {
                 console.log(xhr.responseText);
                 if (xhr.status >= 200 && xhr.status < 400) {
@@ -106,6 +105,7 @@
         <input type="number" id="order_quantity" name="order_quantity">
         <button type="button" onclick="addOrderItem()">Add Item</button>
     </form>
+
     <h1>Order list</h1>
     <div id="orderedItems">
     </div>

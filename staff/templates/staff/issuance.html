@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issuance Page</title>
+    <script>
+        window.addEventListener('load', function () {
+            fetchInventoryAndClients();
+        });
+
+        function fetchInventoryAndClients() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', "{% url 'get_inventory_and_issued_items' %}", true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 400) {
+                    var response = JSON.parse(xhr.responseText);
+                    document.getElementById('inventoryItems').innerHTML = response.inventory_html;
+                    document.getElementById('clientSelect').innerHTML = response.client_html;
+                    document.getElementById('issuedItems').innerHTML = xhr.responseText;
+                }
+            };
+            xhr.send();
+        }
+
+        function issueItem() {
+            var selectedItem = document.getElementById("items").value;
+            var selectedClient = document.getElementById("client").value;
+            var clientDropdown = document.getElementById("client");
+            clientDropdown.disabled = true;
+            clientDropdown.style.color = "#777";
+            document.getElementById("item").value = selectedItem;
+            var agent = document.getElementById("agent").value;
+            var client = document.getElementById("client").value;
+
+            var form = document.getElementById('issuanceItemForm');
+            var formData = new FormData(form);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', form.getAttribute('data-url'), true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.setRequestHeader('X-Agent', document.getElementById("agents").value);
+            xhr.setRequestHeader('X-Client', document.getElementById("client").value);
+            xhr.onload = function () {
+                console.log(xhr.responseText);
+                if (xhr.status >= 200 && xhr.status < 400) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        alert(response.error);
+                    } else {
+                        document.getElementById('issuedItems').innerHTML = response.issued_items_html;
+                    }
+                } else {
+                    console.error("Error issuing item");
+                }
+            };
+            xhr.send(formData);
+        }
+    </script>
+
+</head>
+
+<body>
+    <h1>Issuance Page</h1>
+    <h2>Inventory</h2>
+    <div id="inventoryItems">
+        {% for item in items %}
+        <ul>
+            <li>{{ item }}</li>
+        </ul>
+        {% endfor %}
+    </div>
+
+    <form method="get" action="{% url 'get_inventory_and_issued_items' %}">
+        <label for="client">Select Client:</label>
+        <select name="client" id="client">
+            {% for client in clients %}
+            <option value="{{ client.client_name }}">
+                {{ client.client_name }}
+            </option> {% endfor %}
+        </select>
+        <button type="submit">Select Client</button>
+        <p>Select Client before Selecting Agent</p>
+    </form>
+
+    <form method="post" id="issuanceItemForm" data-url="{% url 'issue_item' %}">
+        {% csrf_token %}
+        {{ form.errors }}
+
+        <label for="agents">Agent: </label>
+        <select id="agents" name="agents">
+            {% for agent in client_agents %}
+            <option value="{{ agent.agent_number }}">{{ agent }}</option>
+            {% endfor %}
+        </select>
+        <label for="items">Item: </label>
+        <select id="items" name="items">
+            {% for item in items %}
+            <option value="{{ item.item_number }}">{{ item }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" id="agent" name="agent">
+        <input type="hidden" id="client" name="client">
+        <input type="hidden" id="item" name="item">
+        <label for="issued_quantity">Quantity: </label>
+        <input type="number" id="issued_quantity" name="issued_quantity">
+        <label for="issued_SRP">Issued SRP: </label>
+        <input type="number" id="issued_SRP" name="issued_SRP">
+
+        <button type="button" onclick="issueItem()">Add Item</button>
+    </form>
+
+    <h1>Issued items list</h1>
+    <div id="issuedItems">
+        {% if issued_items %}
+        <h2>Batch Number: {{ batch_number }}</h2>
+        <ul>
+            {% for issued_item in issued_items %}
+            <li>
+                {{ issued_item.item.item_brand }} {{ issued_item.item.item_model }}
+                Quantity: {{ issued_item.issued_quantity }}
+                SRP: {{ issued_item.issued_SRP }}
+            </li>
+            {% endfor %}
+        </ul>
+
+        {% else %}
+        <p>No issued items to display.</p>
+        {% endif %}
+    </div>
+    <form method="post" action="{% url 'submit_issuance' %}">
+        {% csrf_token %}
+        <button type="submit">Generate Issuance Form</button>
+    </form>
+    <form method="post" action="{% url 'logout_view' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+
+</body>
+
+</html>

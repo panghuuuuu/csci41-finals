@@ -61,14 +61,29 @@ class ItemType(models.Model):
         return f"{self.item_supplier} - {self.item_type} ({self.item_discount * 100}%)"
 
 class Item(models.Model):
+    TIMEPIECES = 'Timepieces'
+    DIGITAL_CAMERAS = 'Digital Cameras and Accessories'
+    MOBILE_PHONES = 'Mobile Phones'
+    SMALL_APPLIANCES = 'Small Appliances'
+
+    ITEM_TYPE_CHOICES = [
+        (TIMEPIECES, 'Timepieces'),
+        (DIGITAL_CAMERAS, 'Digital Cameras and Accessories'),
+        (MOBILE_PHONES, 'Mobile Phones'),
+        (SMALL_APPLIANCES, 'Small Appliances'),
+    ]
+
     item_number = models.AutoField(primary_key=True, unique=True)
     item_brand = models.CharField(max_length=300)
     item_model = models.CharField(max_length=300)
     item_qty = models.IntegerField()
     item_cost = models.DecimalField(max_digits=10, decimal_places=3)
     item_total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, editable=False)
-    supplier =  models.ForeignKey(Supplier, on_delete=models.CASCADE, null=False, blank=False)
+    item_type = models.CharField(max_length=300, choices=ITEM_TYPE_CHOICES)
     
+    def __str__(self):
+        return f"{self.item_brand} {self.item_model} : Quantity: {self.item_qty}"
+
 
 class OrderedItem(models.Model):
     item = models.ForeignKey('SupplierItem', on_delete=models.CASCADE)
@@ -94,41 +109,26 @@ class DeliveredItem(models.Model):
         return f"DeliveredItem: {self.order.item.item_brand}: {self.order.order_quantity} pcs"
 
 class IssuedItem(models.Model):
+    TIMEPIECES = 'Timepieces'
+    DIGITAL_CAMERAS = 'Digital Cameras and Accessories'
+    MOBILE_PHONES = 'Mobile Phones'
+    SMALL_APPLIANCES = 'Small Appliances'
+
+    ITEM_TYPE_CHOICES = [
+        (TIMEPIECES, 'Timepieces'),
+        (DIGITAL_CAMERAS, 'Digital Cameras and Accessories'),
+        (MOBILE_PHONES, 'Mobile Phones'),
+        (SMALL_APPLIANCES, 'Small Appliances'),
+    ]
+
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     issued_quantity = models.IntegerField()
     item_discount = models.DecimalField(max_digits=10, decimal_places=3)
     issued_SRP = models.DecimalField(max_digits=10, decimal_places=3)
     batch_number = models.ForeignKey(BatchInventory, on_delete=models.CASCADE, related_name='issued_items')
-
-    def calculate_delivered_quantity(self):
-        delivered_quantity = 0
-        delivered_items = DeliveredItem.objects.filter(ordered_item__item_number=self.item.item_number)
-
-        if not delivered_items.exists():
-            raise ValidationError("No existing item in inventory.")
-
-        for delivered_item in delivered_items:
-            delivered_quantity += delivered_item.order_quantity
-
-        return delivered_quantity
-
-    def get_discount(self):
-        item_type = self.item.item_type
-        client = Issuance.objects.get(batch_number=self.batch_number)
-
-        try:
-            item_type_instance = ItemType.objects.get(item_type=item_type, client=client)
-            self.item_discount = item_type_instance.item_discount
-        except ItemType.DoesNotExist:
-            raise ValidationError("No existing item type for the specified client.")
+    item_type = models.CharField(max_length=300, choices=ITEM_TYPE_CHOICES)
 
     def save(self, *args, **kwargs):
-        self.get_discount()
-        delivered_quantity = self.calculate_delivered_quantity()
-        
-        if self.issued_quantity > delivered_quantity:
-            raise ValidationError("Issued quantity is greater than available quantity.")
-
         super().save(*args, **kwargs)
 
     def __str__(self):

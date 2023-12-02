@@ -1,7 +1,9 @@
 from django.shortcuts import render, HttpResponse, redirect
-from items.models import SupplierItem, Item, OrderedItem
+from items.models import SupplierItem, Item, OrderedItem, IssuedItem
 from supplier.models import Supplier
-from .models import Staff, Receiver, Order, Issuance
+from client.models import Client
+from agent.models import Agent
+from .models import Staff, Receiver, Issuer, Order, Issuance, BatchInventory
 from .forms import OrderedItemForm, IssuanceItemForm
 from decimal import Decimal
 from django.contrib import messages
@@ -21,11 +23,20 @@ def login_view(request):
 
         if user is not None and user.check_password(f"{staff.staff_first_name}12345"):
             login(request, user)
-            return redirect('get_items')             
+            try:
+                Receiver.objects.get(staff=staff)
+                return redirect('get_items')
+            except Receiver.DoesNotExist:
+                try:
+                    Issuer.objects.get(staff=staff)
+                    return redirect('get_inventory_and_issued_items')
+                except Issuer.DoesNotExist:
+                    user = None
         else:
             messages.error(request, 'Invalid staff number. Please try again.')
 
     return render(request, 'staff/login.html')
+
 
 def logout_view(request):
     logout(request)
@@ -42,6 +53,30 @@ def get_items(request):
         supplier_items = SupplierItem.objects.filter(supplier=supplier_name)
 
     return render(request, 'staff/order.html', {'suppliers': suppliers, 'selected_supplier': selected_supplier, 'supplier_items': supplier_items})
+
+def get_inventory_and_issued_items(request):
+    clients = Client.objects.all()
+    items = Item.objects.all()
+    selected_client = None
+    client_agents = None
+
+    client_name = request.GET.get('client')
+    if client_name:
+        selected_client = Client.objects.get(pk=client_name)
+        client_agents = Agent.objects.filter(client=client_name)
+
+    staff = Staff.objects.get(staff_number=request.user.username)
+    issuer = Issuer.objects.get(staff=staff)
+
+    try:
+        issuance = Issuance.objects.filter(issuer=issuer, active=True).first()
+        batch_number = issuance.batch_number
+        issued_items = IssuedItem.objects.filter(batch_number=batch_number)
+        return render(request, 'staff/issuance.html', {'clients': clients, 'selected_client': selected_client, 'client_agents': client_agents, 'issued_items': issued_items, 'batch_number': batch_number, 'items': items})
+    except Issuance.DoesNotExist:
+        print("No existing issuance found for the given criteria.")
+        return HttpResponse("No pending order found for current user.")
+
 
 def fetch_ordered_items(request):
     staff = Staff.objects.get(staff_number=request.user.username)
@@ -82,7 +117,7 @@ def order_item(request):
                         existing_item = item
                         break
                 if existing_item:
-                    return JsonResponse({'error': 'Ordered with this Item already exists for the current staff member.'})
+                    return JsonResponse({'error': 'Order with this Item already exists for the current staff member.'})
                 
                 order_instance = existing_order
             else:
@@ -100,8 +135,7 @@ def order_item(request):
             return JsonResponse({'ordered_items_html': ordered_items_html})
         else:
             form_errors = {'error': str(form.errors)}
-            print(form_errors)
-            return JsonResponse({'error': 'Ordered with this Item already exists for the current staff member.'})
+            return JsonResponse(form_errors, status=400)
 
     return render(request, 'staff/order/ordered_item.html', {'ordered_items': ordered_items})
 
@@ -125,31 +159,77 @@ def submit_order(request):
 
 def issue_item(request):
     if request.method == 'POST':
-        form = OrderedItemForm(request.POST, request=request)
+        form = IssuanceItemForm(request.POST, request=request)
         if form.is_valid():
             issued_item = form.cleaned_data['item']
             issued_quantity = form.cleaned_data['issued_quantity']
             issued_SRP = form.cleaned_data['issued_SRP']
-            delivered_items = DeliveredItem.objects.filter(ordered_item=issued_item)
+            
+            item = Item.objects.filter(item_number=issued_item.item_number).first()
             staff = Staff.objects.get(staff_number=request.user.username)
-            issuer = Receiver.objects.get(staff=staff)
+            issuer = Issuer.objects.get(staff=staff)
+            agent = request.headers.get('X-Agent')
+            client = request.headers.get('X-Client')
 
-            existing_issuance = None
+            agent_instance = Agent.objects.get(agent_number=agent)
+            client_instance = Client.objects.get(client_name=client)
+            print(agent_instance)
+
+            existing_item = None
             existing_issuance = Issuance.objects.filter(issuer=issuer, active=True).first()
 
-            delivered_quantity = 0
-
-            if not delivered_items.exists():
+            if not item:
                 return JsonResponse({'error': 'Item does not exist.'})
 
-            for delivered_item in delivered_items:
-                delivered_quantity += delivered_item.order_quantity
-            
-            if issuance_quantity > delivered_quantity:
+            if issued_quantity > item.item_qty:
                 return JsonResponse({'error': 'Issued quantity is greater than available quantity.'})
             else:
-                delivered_quantity -= issuer.quantity
-                
+                item.item_qty -= issued_quantity
+                item.save()
+            
+            if existing_issuance:
+                for item in list(IssuedItem.objects.filter(batch_number=existing_issuance.batch_number)):
+                    if item.item == issued_item:
+                        existing_item = issued_item
+                        break
+                if existing_item:
+                    return JsonResponse({'error': 'Issuance with this Item already exists for the current staff member.'})
 
+                issuance_instance = existing_issuance
+            else:
+                batch = BatchInventory.objects.create()
+                issuance_instance = Issuance.objects.create(issuer=issuer, agent=agent_instance, client=client_instance, batch_number=batch)
 
+            issuance_item_instance = IssuedItem.objects.create(
+                item=item, 
+                issued_quantity=issued_quantity, 
+                batch_number=issuance_instance.batch_number,
+                issued_SRP=issued_SRP, 
+                item_discount = 0
+            )
 
+            issued_items = IssuedItem.objects.filter(batch_number=issuance_instance.batch_number)
+            issued_items_html = render_to_string('staff/issuance/issued_item.html', {'issued_items': issued_items, 'batch_number': issuance_instance.batch_number})
+            return JsonResponse({'issued_items_html': issued_items_html})
+        else:
+            form_errors = {'error': str(form.errors)}
+            return JsonResponse(form_errors, status=400)
+    return render(request, 'staff/issuance/issued_item.html', {'issued_items': issued_items})
+
+def submit_issuance(request):
+    if request.method == 'POST':
+        staff = Staff.objects.get(staff_number=request.user.username)
+        issuer = Issuer.objects.get(staff=staff)
+        try:
+            issuance = Issuance.objects.get(issuer=issuer, active=True)
+            batch_number = issuance.batch_number
+            agent = issuance.agent
+            client = issuance.client
+            issuer = issuance.issuer
+            issued_items= IssuedItem.objects.filter(batch_number=batch_number)            
+            issue_date = issuance.issue_date
+            issue_time = issuance.issue_time
+        except Order.DoesNotExist:
+            print("No existing issuance found for the given criteria.")
+            return HttpResponse("No pending order found for current user.")
+    return render(request, 'staff/issuance/issuance_form.html', {'batch_number': batch_number, 'agent': agent, 'client': client, 'issuer': issuer, 'issued_items': issued_items, 'issue_date': issue_date, 'issue_time': issue_time})

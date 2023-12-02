@@ -4,6 +4,9 @@ from .models import SupplierItem, Item, SoldItem, DeliveredItem, IssuedItem, Ret
 class SupplierItemAdmin(admin.ModelAdmin):
     list_display = ('supplier_item_number', 'supplier_item_brand', 'supplier_item_model', 'supplier_item_qty', 'supplier_item_type', 'supplier_item_cost', 'supplier_item_total_cost', 'supplier')
     search_fields = ('supplier_item_brand', 'supplier_item_model', 'supplier_item_type')
+class ItemAdmin(admin.ModelAdmin):
+    list_display = ('item_number', 'item_brand', 'item_model')
+
 class DeliveredItemAdmin(admin.ModelAdmin):
     list_display = ('ordered_item',)
 @admin.register(SoldItem, IssuedItem, ReturnedItem, OrderedItem)
@@ -31,6 +34,6 @@ class ItemTypeAdmin(admin.ModelAdmin):
     list_display = ('item_type', 'item_discount', 'item_client')
 
 admin.site.register(SupplierItem, SupplierItemAdmin)
-# admin.site.register(Item, ItemAdmin)
+admin.site.register(Item, ItemAdmin)
 admin.site.register(ItemType, ItemTypeAdmin)
 admin.site.register(DeliveredItem, DeliveredItemAdmin)

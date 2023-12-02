@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Staff, Receiver, Issuer, Order
+from .models import *
 
 class StaffAdmin(admin.ModelAdmin):
     list_display = ('staff_number', 'staff_first_name', 'staff_last_name', 'staff_phone_number', 'staff_type')
@@ -16,7 +16,11 @@ class IssuerAdmin(admin.ModelAdmin):
 class OrdersAdmin(admin.ModelAdmin):
     list_display = ('order_number', 'receiver')
 
+class IssuanceAdmin(admin.ModelAdmin):
+    list_display = ('batch_number', 'issuer')
+
 admin.site.register(Staff, StaffAdmin)
 admin.site.register(Receiver, ReceiverAdmin)
 admin.site.register(Issuer, IssuerAdmin)
 admin.site.register(Order, OrdersAdmin)
+admin.site.register(Issuance, IssuanceAdmin)

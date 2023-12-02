@@ -28,17 +28,17 @@ class Staff(models.Model):
         super().save(*args, **kwargs)
         if self.staff_type == 'Receiver':
             Receiver.objects.create(staff=self)
-            user, created = User.objects.get_or_create(username=str(self.staff_number))
-            print(f"User created: {created}, username: {user.username}")
-
-            user.first_name = self.staff_first_name
-            user.last_name = self.staff_last_name
-            user.email = f"{self.staff_number}@example.com" 
-            user.set_unusable_password()  
-            user.set_password(f"{self.staff_first_name}12345")
-            user.save()
         elif self.staff_type == 'Issuer':
             Issuer.objects.create(staff=self)
+        
+        user, created = User.objects.get_or_create(username=str(self.staff_number))
+        user.first_name = self.staff_first_name
+        user.last_name = self.staff_last_name
+        user.email = f"{self.staff_number}@example.com" 
+        user.set_unusable_password()  
+        user.set_password(f"{self.staff_first_name}12345")
+        user.save()
+
 class Receiver(models.Model):
     staff = models.OneToOneField(Staff, on_delete=models.CASCADE)
     receiver_number = models.AutoField(primary_key=True)
@@ -66,9 +66,12 @@ class Order(models.Model):
 
 class BatchInventory(models.Model):
     batch_number = models.AutoField(primary_key=True, unique=True)
+    def __str__(self):
+        return f"{self.batch_number}"
+
 class Issuance(models.Model):
     batch_number = models.ForeignKey(BatchInventory, on_delete=models.CASCADE, null=False, blank=False)
-    issuer = models.ForeignKey(Receiver, on_delete=models.CASCADE, null=False, blank=False)
+    issuer = models.ForeignKey(Issuer, on_delete=models.CASCADE, null=False, blank=False)
     agent = models.ForeignKey(Agent, on_delete=models.CASCADE)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
 
@@ -79,4 +82,8 @@ class Issuance(models.Model):
     def verify_agent(self):
         if self.agent.client != self.client:
             raise ValidationError("Agent client does not match specified client.")
+    def save(self, *args, **kwargs):
+        self.verify_agent()
+        super().save(*args, **kwargs)
+
 
