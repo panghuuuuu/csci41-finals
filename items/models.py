@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from supplier.models import Supplier, Delivery
-from staff.models import Issuer, Receiver, BatchInventory, Issuance, Order
+from staff.models import Issuer, Receiver, BatchInventory, Issuance, Order, Transfer
 from client.models import Client
 # Create your models here.
 
@@ -58,7 +58,7 @@ class ItemType(models.Model):
     item_client = models.ForeignKey(Client, on_delete=models.CASCADE, null=False, blank=False)
 
     def __str__(self):
-        return f"{self.item_supplier} - {self.item_type} ({self.item_discount * 100}%)"
+        return f"{self.item_type}"
 
 class Item(models.Model):
     TIMEPIECES = 'Timepieces'
@@ -108,31 +108,27 @@ class DeliveredItem(models.Model):
     def __str__(self):
         return f"DeliveredItem: {self.order.item.item_brand}: {self.order.order_quantity} pcs"
 
+class TransferredItem(models.Model):
+    transfer_number = models.ForeignKey(Transfer, on_delete=models.CASCADE)
+    transferred_item = models.ForeignKey('IssuedItem', on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.transferred_item}"
+
 class IssuedItem(models.Model):
-    TIMEPIECES = 'Timepieces'
-    DIGITAL_CAMERAS = 'Digital Cameras and Accessories'
-    MOBILE_PHONES = 'Mobile Phones'
-    SMALL_APPLIANCES = 'Small Appliances'
-
-    ITEM_TYPE_CHOICES = [
-        (TIMEPIECES, 'Timepieces'),
-        (DIGITAL_CAMERAS, 'Digital Cameras and Accessories'),
-        (MOBILE_PHONES, 'Mobile Phones'),
-        (SMALL_APPLIANCES, 'Small Appliances'),
-    ]
-
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     issued_quantity = models.IntegerField()
     item_discount = models.DecimalField(max_digits=10, decimal_places=3)
     issued_SRP = models.DecimalField(max_digits=10, decimal_places=3)
     batch_number = models.ForeignKey(BatchInventory, on_delete=models.CASCADE, related_name='issued_items')
-    item_type = models.CharField(max_length=300, choices=ITEM_TYPE_CHOICES)
+    item_type = models.ForeignKey(ItemType, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
+        self.item_discount = self.item_type.item_discount
         super().save(*args, **kwargs)
+        
 
     def __str__(self):
-        return f"IssuedItem: {self.item.item_brand}: {self.issued_quantity} pcs"
+        return f"{self.item.item_brand} {self.item.item_model}: {self.issued_quantity} pcs"
 
 class SoldItem(models.Model):
     item = models.OneToOneField(Item, on_delete = models.CASCADE)

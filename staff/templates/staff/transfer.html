@@ -114,7 +114,17 @@
     </form>
     <h1>Transfer list</h1>
     <div id="transferItems">
+        {% for item in transferred_items %}
+        <ul>
+            <li>{{ item }}</li>
+        </ul>
+        {% endfor %}
     </div>
+    <form method="post" action="{% url 'complete_transfer' %}">
+        {% csrf_token %}
+        <button type="submit">Complete Transfer</button>
+    </form>
+
 </body>
 
 </html>

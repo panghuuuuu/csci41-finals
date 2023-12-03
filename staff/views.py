@@ -1,9 +1,9 @@
 from django.shortcuts import render, HttpResponse, redirect
-from items.models import SupplierItem, Item, OrderedItem, IssuedItem
+from items.models import SupplierItem, Item, OrderedItem, IssuedItem, TransferredItem, ItemType
 from supplier.models import Supplier
 from client.models import Client
 from agent.models import Agent
-from .models import Staff, Receiver, Issuer, Order, Issuance, BatchInventory
+from .models import Staff, Receiver, Issuer, Order, Issuance, BatchInventory, Transfer
 from .forms import OrderedItemForm, IssuanceItemForm, TransferItemForm
 from decimal import Decimal
 from django.contrib import messages
@@ -64,7 +64,7 @@ def get_inventory_and_issued_items(request):
     if client_name:
         selected_client = Client.objects.get(pk=client_name)
         client_agents = Agent.objects.filter(client=client_name)
-
+    
     staff = Staff.objects.get(staff_number=request.user.username)
     issuer = Issuer.objects.get(staff=staff)
 
@@ -167,7 +167,7 @@ def issue_item(request):
             issued_quantity = form.cleaned_data['issued_quantity']
             issued_SRP = form.cleaned_data['issued_SRP']
             
-            item = Item.objects.filter(item_number=issued_item.item_number).first()
+            item_instance = Item.objects.filter(item_number=issued_item.item_number).first()
             staff = Staff.objects.get(staff_number=request.user.username)
             issuer = Issuer.objects.get(staff=staff)
             agent = request.headers.get('X-Agent')
@@ -179,15 +179,16 @@ def issue_item(request):
             existing_item = None
             existing_issuance = Issuance.objects.filter(issuer=issuer, isActive=True).first()
 
-            if not item:
+            if not item_instance:
                 return JsonResponse({'error': 'Item does not exist.'})
 
-            if issued_quantity > item.item_qty:
+            if issued_quantity > item_instance.item_qty:
                 return JsonResponse({'error': 'Issued quantity is greater than available quantity.'})
             else:
-                item.item_qty -= issued_quantity
-                item.save()
+                item_instance.item_qty -= issued_quantity
+                item_instance.save()
             
+            item_type = ItemType.objects.get(item_client=client_instance, item_type=item_instance.item_type)
             if existing_issuance:
                 for item in list(IssuedItem.objects.filter(batch_number=existing_issuance.batch_number)):
                     if item.item == issued_item:
@@ -202,11 +203,12 @@ def issue_item(request):
                 issuance_instance = Issuance.objects.create(issuer=issuer, agent=agent_instance, client=client_instance, batch_number=batch)
 
             issuance_item_instance = IssuedItem.objects.create(
-                item=item, 
+                item=item_instance, 
                 issued_quantity=issued_quantity, 
                 batch_number=issuance_instance.batch_number,
                 issued_SRP=issued_SRP, 
-                item_discount = 0
+                item_discount = 0, 
+                item_type=item_type
             )
 
             issued_items = IssuedItem.objects.filter(batch_number=issuance_instance.batch_number)
@@ -243,7 +245,7 @@ def fetch_batch_items(request):
     
     source = request.GET.get('source')
     receiver = request.GET.get('receiver')
-    
+
     try:
         source_batch_number = source
         source_batch = IssuedItem.objects.filter(batch_number=source)
@@ -255,8 +257,12 @@ def fetch_batch_items(request):
         receiver_batch = IssuedItem.objects.filter(batch_number=receiver)
     except Issuance.DoesNotExist:
         receiver_batch = None
-
-    return render(request, 'staff/transfer.html', {'source_batch': source_batch, 'receiver_batch': receiver_batch, 'batches': batches, 'receiver_batch_number': receiver_batch_number, 'source_batch_number': source_batch_number})
+    try:
+        transfer_form = Transfer.objects.get(isComplete=False)
+        transferred_items = TransferredItem.objects.filter(transfer_number=transfer_form)
+    except Transfer.DoesNotExist:
+        transferred_items = []
+    return render(request, 'staff/transfer.html', {'source_batch': source_batch, 'receiver_batch': receiver_batch, 'batches': batches, 'receiver_batch_number': receiver_batch_number, 'source_batch_number': source_batch_number, 'transferred_items': transferred_items})
 
 
 def transfer_items(request):
@@ -266,6 +272,11 @@ def transfer_items(request):
             receiver_batch_number = form.cleaned_data['receiver_batch_number']
             source_batch_number = form.cleaned_data['batch_number']
             item = form.cleaned_data['item']
+
+            if IssuedItem.objects.filter(batch_number=receiver_batch_number, item=item).exists():
+                return HttpResponse("Cannot transfer item. Existing item already exists in receiving batch.")
+            existing_transfer = Transfer.objects.filter(isComplete=False).first()
+
             try:
                 transferred_item = IssuedItem.objects.get(batch_number=source_batch_number, item=item)
             except IssuedItem.DoesNotExist:
@@ -273,15 +284,40 @@ def transfer_items(request):
 
             transferred_item.batch_number = receiver_batch_number
             transferred_item.save()
+
+            if existing_transfer:
+                transfer_form = existing_transfer
+            else:
+                transfer_form = Transfer.objects.create(receiver_batch_number=receiver_batch_number, source_batch_number=source_batch_number)
+ 
+            transferred_item_instance = TransferredItem.objects.create(transfer_number=transfer_form, transferred_item=transferred_item)
             receiver_batch = IssuedItem.objects.filter(batch_number=receiver_batch_number)
             source_batch = IssuedItem.objects.filter(batch_number=source_batch_number)
-            return render(request, 'staff/transfer/transfer_items.html', {'receiver_batch': receiver_batch, 'source_batch': source_batch})
+            transfer_form = Transfer.objects.get(isComplete=False)
+            transferred_items = TransferredItem.objects.filter(transfer_number=transfer_form)
+            return render(request, 'staff/transfer.html', {'receiver_batch': receiver_batch, 'source_batch': source_batch, 'transferred_items': transferred_items})
 
         else:
             form_errors = {'error': str(form.errors)}
-            print(form_errors)  # Add this line for debugging
             return JsonResponse(form_errors, status=400)
             
+def complete_transfer(request):
+    if request.method == 'POST':
+        try:
+            transfer_form = Transfer.objects.get(isComplete=False)
+            source_batch_number = transfer_form.source_batch_number
+            receiver_batch_number = transfer_form.receiver_batch_number
+            source = Issuance.objects.get(batch_number=source_batch_number)
+            source_agent = source.agent
+            receiver = Issuance.objects.get(batch_number=receiver_batch_number)
+            receiving_agent = receiver.agent
+            transferred_items = TransferredItem.objects.filter(transfer_number=transfer_form)
+            transfer_date = transfer_form.transfer_date
+            transfer_form.isComplete = True
+            transfer_form.save()
+        except Transfer.DoesNotExist:
+            return HttpResponse("No pending transfer form found.")
+    return render(request, 'staff/transfer/transfer_form.html', {'source_batch_number': source_batch_number, 'receiver_batch_number': receiver_batch_number, 'source_agent': source_agent, 'receiving_agent': receiving_agent, 'transferred_items': transferred_items, 'transfer_date': transfer_date})
 
 
 

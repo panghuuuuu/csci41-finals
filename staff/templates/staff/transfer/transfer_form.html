@@ -1,0 +1,11 @@
+<p>Transfer Date: {{ transfer_date }}</p>
+<p>From: {{source_agent}} Batch: {{ source_batch_number }}</p>
+<p>To:{{receiving_agent}} Batch: {{receiver_batch_number}}</p>
+<ul>
+    {% for item in transferred_items %}
+    <li>{{ item.transferred_item.item.item_brand }} {{ item.transferred_item.item.item_model }}
+        Quantity: {{ item.transferred_item.issued_quantity }}
+        SRP: {{ item.transferred_item.issued_SRP }}
+    </li>
+    {% endfor %}
+</ul>

@@ -86,8 +86,11 @@ class Issuance(models.Model):
         super().save(*args, **kwargs)
 
 class Transfer(models.Model):
+    transfer_number = models.AutoField(primary_key=True, unique=True)
     receiver_batch_number = models.ForeignKey(BatchInventory, on_delete=models.CASCADE, null=False, blank=False, related_name="receiver_batch_number")
     source_batch_number = models.ForeignKey(BatchInventory, on_delete=models.CASCADE, null=False, blank=False, related_name="source_batch_number")
+    isComplete = models.BooleanField(default=False)
+    transfer_date = models.DateField(auto_now_add=True)
 
 class Sales(models.Model):
     invoice_number = models.AutoField(primary_key=True, unique=True)
