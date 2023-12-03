@@ -11,3 +11,9 @@ class Agent(models.Model):
 
     def __str__(self):
         return f"{self.agent_last_name}, {self.agent_first_name}"
+
+class Sales(models.Model):
+    invoice_number = models.AutoField(primary_key=True, unique=True)
+    agent = models.ForeignKey("Agent", on_delete=models.CASCADE)
+    sales_date = models.DateField(auto_now_add=True)
+    total_sales = models.IntegerField(null=False, blank=False, default=0)

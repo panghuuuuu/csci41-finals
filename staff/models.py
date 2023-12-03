@@ -92,7 +92,6 @@ class Transfer(models.Model):
     isComplete = models.BooleanField(default=False)
     transfer_date = models.DateField(auto_now_add=True)
 
-class Sales(models.Model):
-    invoice_number = models.AutoField(primary_key=True, unique=True)
-    sales_date = models.DateField(auto_now_add=True)
-    sales_time = models.TimeField(auto_now_add=True)
+class Return(models.Model):
+    batch = models.ForeignKey("Issuance", on_delete=models.CASCADE, null=False, blank=False)
+    return_date = models.DateField(auto_now_add=True)

@@ -8,10 +8,14 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = ('item_number', 'item_brand', 'item_model')
 
 class TransferredItemAdmin(admin.ModelAdmin):
-    list_display = ('transferred_item', )
+    list_display = ('item', )
 
 class DeliveredItemAdmin(admin.ModelAdmin):
     list_display = ('ordered_item',)
+
+class ItemTypeAdmin(admin.ModelAdmin):
+    list_display = ('item_type', 'item_discount', 'item_client')
+
 @admin.register(SoldItem, IssuedItem, ReturnedItem, OrderedItem)
 class ItemTransactionAdmin(admin.ModelAdmin):
     def get_quantity(self, obj):
@@ -21,7 +25,7 @@ class ItemTransactionAdmin(admin.ModelAdmin):
             return obj.order_quantity
         elif hasattr(obj, 'issued_quantity'):
             return obj.issued_quantity
-        elif hasattr(obj, 'quantity_returned'):
+        elif hasattr(obj, 'return_quantity'):
             return obj.quantity_returned
         else:
             return None
@@ -32,9 +36,6 @@ class ItemTransactionAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('item')
 
     get_quantity.short_description = 'Quantity'
-
-class ItemTypeAdmin(admin.ModelAdmin):
-    list_display = ('item_type', 'item_discount', 'item_client')
 
 admin.site.register(SupplierItem, SupplierItemAdmin)
 admin.site.register(Item, ItemAdmin)

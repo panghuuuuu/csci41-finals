@@ -1,8 +1,9 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from supplier.models import Supplier, Delivery
-from staff.models import Issuer, Receiver, BatchInventory, Issuance, Order, Transfer
+from staff.models import Issuer, Receiver, BatchInventory, Issuance, Order, Transfer, Return
 from client.models import Client
+from agent.models import Sales
 # Create your models here.
 
 class SupplierItem(models.Model):
@@ -106,14 +107,7 @@ class DeliveredItem(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='delivered_items')
 
     def __str__(self):
-        return f"DeliveredItem: {self.order.item.item_brand}: {self.order.order_quantity} pcs"
-
-class TransferredItem(models.Model):
-    transfer_number = models.ForeignKey(Transfer, on_delete=models.CASCADE)
-    transferred_item = models.ForeignKey('IssuedItem', on_delete=models.CASCADE)
-    def __str__(self):
-        return f"{self.transferred_item}"
-
+        return f"{self.order.item.item_brand}: {self.order.order_quantity} pcs"
 class IssuedItem(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     issued_quantity = models.IntegerField()
@@ -126,24 +120,33 @@ class IssuedItem(models.Model):
         self.item_discount = self.item_type.item_discount
         super().save(*args, **kwargs)
         
-
     def __str__(self):
         return f"{self.item.item_brand} {self.item.item_model}: {self.issued_quantity} pcs"
 
-class SoldItem(models.Model):
-    item = models.OneToOneField(Item, on_delete = models.CASCADE)
-    sold_quantity = models.IntegerField()
-
-    def save(self, *args, **kwargs):
-        self.total_sales = self.sold_quantity * self.item_total_cost
-    
+class TransferredItem(models.Model):
+    item = models.ForeignKey('IssuedItem', on_delete=models.CASCADE)
+    transfer_number = models.ForeignKey(Transfer, on_delete=models.CASCADE)
     def __str__(self):
-        return f"SoldItem: {self.item.item_brand} {self.item.item_model}"
+        return f"{self.transferred_item}"
+
+class SoldItem(models.Model):
+    item = models.ForeignKey('IssuedItem', on_delete=models.CASCADE)
+    invoice_number = models.ForeignKey(Sales, on_delete=models.CASCADE)
+    sold_quantity = models.IntegerField()
+    total_sales = models.DecimalField(max_digits=10, decimal_places=3)
+    
+    def save(self, *args, **kwargs):
+        self.total_sales = self.sold_quantity * self.sold_item.issued_SRP * self.sold_item.item_discount
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.sold_item}"
 
 class ReturnedItem(models.Model):
-    item = models.OneToOneField(Item, on_delete = models.CASCADE)
-    returned_quantity = models.IntegerField()
+    item = models.ForeignKey('IssuedItem', on_delete=models.CASCADE)
+    return_form = models.ForeignKey(Return, on_delete=models.CASCADE)
+    return_quantity = models.DecimalField(max_digits=10, decimal_places=3)
 
     def __str__(self):
-        return f"ReturnedItem: {self.item.item_brand}: {returned_quantity} pcs"
+        return f"{self.return_item}: {self.returned_quantity} pcs"
 
