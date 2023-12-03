@@ -1,24 +1,45 @@
-{% block title %} Filter {% endblock %}
+{% block title %} <h1> Delivery Receipts </h1> {% endblock %}
 {% block header %} 
-    <h1> Search Form </h1> 
+    <h2> Filter Form </h2> 
 {% endblock %}
 {% block content %}
 <form method="GET" action=".">
-    <input type="search" name="search_by_item" placeholder="Search for an Item" />
+    <button name="show_all"> Show All Deliveries </button>
+    <input type="search" name="search_by_deliverynumber" placeholder="Search for a Delivery Receipt" />
     <input type="search" name="search_by_item_type" placeholder="Search by Item Type" />
     <input type="search" name="search_by_date" placeholder="Search by Date" />
+    <!-- <input type="search" name="search_by_receiver" placeholder="Search by Receiver" />
+    <input type="search" name="search_by_supplier" placeholder="Search by Supplier" /> -->
+    <button type="submit"> Search </button>
+
+</form>
+<h3>Search for an Item </h3>
+<form method="GET" action=".">
+    <input type="search" name="search_by_item_model" placeholder="Input Item Model" />
+    <input type="search" name="search_by_item_brand" placeholder="Input Item Brand" />
     <button type="submit"> Search </button>
 </form>
+
 <hr />
 <div>
     <ul>
-        {% for item in queryset %}
+        {% for query in queryset %}
         <li>
-            <span> Delivery: {{ deliveryreceipt.delivery_number }} </span>
-            <span> Date: {{ deliveryreceipt.date }} </span>
-            <span> Time: {{ deliveryreceipt.time }} </span>
-            <span> Receiver: {{ deliveryreceipt.receiver }} </span>
-            <span> Supplier: {{ deliveryreceipt.supplier }} </span>
+            <span> Delivery: {{ query.delivery_number }} </span> <br>
+            <span> Items Delivered: {% for delivered_item in query.delivered_items.all %}
+                <li>{{ delivered_item.order.item.item_brand}} {{ delivered_item.order.item.item_model}} <br>
+                    Quantity: {{delivered_item.order.order_quantity}}
+                    <br>
+                    Cost: {{delivered_item.order.item.item_cost }}
+                    <br>
+                    Total: {{delivered_item.order.order_total_cost}}
+                </li>
+                {% endfor %}
+            </span> 
+            <span> Date: {{ query.delivery_date }} </span> <br>
+            <span> Time: {{ query.delivery_time }} </span> <br>
+            <span> Receiver: {{ query.order.receiver }} </span> <br>
+            <span> Supplier: {{ query.order.supplier }} </span>
         </li>
         <hr />
         {% endfor %}

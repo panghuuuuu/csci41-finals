@@ -158,6 +158,18 @@ def submit_order(request):
             return HttpResponse("No pending order found for current user.")
     return render(request, 'staff/order/receipt.html', {'order_number': order_number, 'ordered_items': ordered_items, 'order_supplier': order_supplier, 'order_receiver': order_receiver, 'order_date': order_date, 'order_time': order_time})
 
+def delivery_status(request):
+    possible_status = Order.objects.values_list('isDelivered', flat=True).distinct()
+    selected_status = None
+    orders = None
+    
+    selected_status = request.GET.get('status')
+    if selected_status is not None:
+        orders = Order.objects.filter(isDelivered = selected_status)
+        
+    context = {'possible_status': possible_status, 'orders': orders, 'selected_status': selected_status}
+
+    return render(request, 'staff/order/delivery_status.html', context)
 
 def issue_item(request):
     if request.method == 'POST':

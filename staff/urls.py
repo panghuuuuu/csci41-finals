@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import *
+from .views import * delivery_status
 
 urlpatterns = [
     path('order/', get_items, name='get_items'),
@@ -14,4 +14,5 @@ urlpatterns = [
     path('login/', login_view, name='login_view'),  
     path('logout/', logout_view, name='logout_view'),
     path('fetch_ordered_items/', fetch_ordered_items, name='fetch_ordered_items'),
+    path('order/delivery_status/', delivery_status, name='delivery_status')
 ]
