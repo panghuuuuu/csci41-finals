@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import * delivery_status
+from .views import *
 
 urlpatterns = [
     path('order/', get_items, name='get_items'),
