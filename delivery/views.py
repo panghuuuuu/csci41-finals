@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.utils.datetime_safe import datetime
 from django.db.models import Q
 from supplier.models import Delivery
+from items.models import DeliveredItem
 
 def filter_view(request):
     qs = Delivery.objects.select_related('order__receiver', 'order__supplier')
@@ -18,10 +19,9 @@ def filter_view(request):
         try:
             if byItemModel_query and byItemBrand_query:
                 qs = qs.filter(
-                    Q(delivered_items__order__item__item_model__icontains = byItemModel_query) &
-                    Q(delivered_items__order__item__item_brand__icontains = byItemBrand_query)
+                    Q(delivered_items__ordered_item__item__supplier_item_model__icontains=byItemModel_query) &
+                    Q(delivered_items__ordered_item__item__supplier_item_brand__icontains=byItemBrand_query)
                 )
-
                 if not qs.exists():
                     raise ValueError()
         except ValueError:
@@ -37,7 +37,7 @@ def filter_view(request):
 
     elif byItemType_query:
         try: 
-            qs = qs.filter(delivered_items__order__item__item_type__icontains = byItemType_query)
+            qs = qs.filter(delivered_items__ordered_item__item__supplier_item_type__icontains = byItemType_query)
             if not qs.exists():
                 raise ValueError()
 
@@ -74,7 +74,8 @@ def filter_view(request):
         pass    
     
     context = {
-        'queryset': qs
+        'queryset': qs,
+        'delivered_items': DeliveredItem.objects.filter(delivery__in=qs)
     }
     return render(request, 'delivery/filter.html', context)
 

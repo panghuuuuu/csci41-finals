@@ -107,7 +107,7 @@ class DeliveredItem(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='delivered_items')
 
     def __str__(self):
-        return f"{self.order.item.item_brand}: {self.order.order_quantity} pcs"
+        return f"{self.ordered_item.item.supplier_item_brand}: {self.ordered_item.order_quantity} pcs"
 class IssuedItem(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     issued_quantity = models.IntegerField()

@@ -24,23 +24,23 @@
 
     {% if selected_supplier %}
     <h2>Items for {{ selected_supplier }}</h2>
-        {% if items %}
-        <dl>
-            {% for item in items %}
-            <dd>
-                <p>{{item}}</p>
-                <ul>
-                    <li>Quantity Available: {{item.item_qty}}</li>
-                    <li>Item Type: {{item.item_type}}</li>
-                    <li>Unit Cost: {{item.item_cost}}</li>
-                    <li>Unit SRP: {{item.item_SRP}}</li>
-                </ul>
-            </dd>
-            {% endfor %}
-        </dl>
-        {% else %}
-        <p>No items available for the selected supplier.</p>
-        {% endif %}
+    {% if items %}
+    <dl>
+        {% for item in items %}
+        <dd>
+            <p>{{item}}</p>
+            <ul>
+                <li>Quantity Available: {{item.supplier_item_qty}}</li>
+                <li>Item Type: {{item.supplier_item_type}}</li>
+                <li>Unit Cost: {{item.supplier_item_cost}}</li>
+                <li>Total Cost: {{item.supplier_item_total_cost}}</li>
+            </ul>
+        </dd>
+        {% endfor %}
+    </dl>
+    {% else %}
+    <p>No items available for the selected supplier.</p>
+    {% endif %}
 
     {% endif %}
 

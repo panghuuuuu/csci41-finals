@@ -1,6 +1,6 @@
 {% block title %} <h1> Delivery Receipts </h1> {% endblock %}
-{% block header %} 
-    <h2> Filter Form </h2> 
+{% block header %}
+<h2> Filter Form </h2>
 {% endblock %}
 {% block content %}
 <form method="GET" action=".">
@@ -27,19 +27,20 @@
         <li>
             <span> Delivery: {{ query.delivery_number }} </span> <br>
             <span> Items Delivered: {% for delivered_item in query.delivered_items.all %}
-                <li>{{ delivered_item.order.item.item_brand}} {{ delivered_item.order.item.item_model}} <br>
-                    Quantity: {{delivered_item.order.order_quantity}}
-                    <br>
-                    Cost: {{delivered_item.order.item.item_cost }}
-                    <br>
-                    Total: {{delivered_item.order.order_total_cost}}
-                </li>
-                {% endfor %}
-            </span> 
-            <span> Date: {{ query.delivery_date }} </span> <br>
-            <span> Time: {{ query.delivery_time }} </span> <br>
-            <span> Receiver: {{ query.order.receiver }} </span> <br>
-            <span> Supplier: {{ query.order.supplier }} </span>
+        <li>{{ delivered_item.ordered_item.item.supplier_item_brand }}
+            {{ delivered_item.ordered_item.item.supplier_item_model}} <br>
+            Quantity: {{delivered_item.ordered_item.order_quantity}}
+            <br>
+            Cost: {{delivered_item.ordered_item.item.supplier_item_cost }}
+            <br>
+            Total: {{delivered_item.ordered_item.order_total_cost}}
+        </li>
+        {% endfor %}
+        </span>
+        <span> Date: {{ query.delivery_date }} </span> <br>
+        <span> Time: {{ query.delivery_time }} </span> <br>
+        <span> Receiver: {{ query.order.receiver }} </span> <br>
+        <span> Supplier: {{ query.order.supplier }} </span>
         </li>
         <hr />
         {% endfor %}

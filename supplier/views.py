@@ -1,7 +1,7 @@
 from django.shortcuts import render, HttpResponse
 from staff.models import Order
 from .models import Delivery, Supplier
-from items.models import Item, DeliveredItem, OrderedItem, Item
+from items.models import Item, DeliveredItem, OrderedItem, SupplierItem
 
 def get_orders(request):
     orders = Order.objects.filter(isDelivered=False)
@@ -45,6 +45,6 @@ def get_supplier_inventory(request):
     supplier_name = request.GET.get('supplier')
     if supplier_name:
         selected_supplier = Supplier.objects.get(pk=supplier_name)
-        items = Item.objects.filter(supplier=supplier_name)
+        items = SupplierItem.objects.filter(supplier=supplier_name)
 
     return render(request, 'allinventory.html', {'suppliers': suppliers, 'selected_supplier': selected_supplier, 'items': items})
