@@ -31,8 +31,8 @@
             <h2 class="subtitle">Search an Item</h2>
             <form method="GET" action=".">
                 <div class="searches">
+                    <input type="search" name="search_by_item_brand" placeholder="Input Item Brand" />
                     <input type="search" name="search_by_item_model" placeholder="Input Item Model" />
-                <input type="search" name="search_by_item_brand" placeholder="Input Item Brand" />
                 </div>
                 <button class="form-button" type="submit"> Search </button>
             </form>
@@ -62,7 +62,7 @@
                     <tbody>
                         {% for delivered_item in query.delivered_items.all %}
                         <tr>
-                            <td>{{ delivered_item.ordered_item.item.supplier_item_brand }}</td>
+                            <td>{{delivered_item.ordered_item.item.supplier_item_brand }} {{delivered_item.ordered_item.item.supplier_item_model}}</td>
                             <td>{{delivered_item.ordered_item.order_quantity}}</td>
                             <td>{{delivered_item.ordered_item.item.supplier_item_cost }}</td>
                             <td>{{delivered_item.ordered_item.order_total_cost}}</td>
