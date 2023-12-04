@@ -136,11 +136,11 @@ class SoldItem(models.Model):
     total_sales = models.DecimalField(max_digits=10, decimal_places=3)
     
     def save(self, *args, **kwargs):
-        self.total_sales = self.sold_quantity * self.sold_item.issued_SRP * self.sold_item.item_discount
+        self.total_sales = self.sold_quantity * self.item.issued_SRP * self.item.item_discount
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.sold_item}"
+        return f"{self.item}"
 
 class ReturnedItem(models.Model):
     item = models.ForeignKey('IssuedItem', on_delete=models.CASCADE)

@@ -1,0 +1,11 @@
+<p>Invoice: {{ invoice }}</p>
+<p>Date: {{ sales_date }}</p>
+<p>Client: {{ client }}</p>
+<p>Agent: {{ selected_agent }}</p>
+<p>Sold Items</p>
+<ul>
+    {% for item in sold_items %}
+    <li>{{ item }} Sold qty: {{ item.sold_quantity }} Discount Rate: {{ item.item.item_discount }}</li>
+    {% endfor %}
+    Total Sales: {{ total_sales }}
+</ul>
