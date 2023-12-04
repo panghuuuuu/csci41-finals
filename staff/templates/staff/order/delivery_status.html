@@ -1,45 +1,49 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delivery Status</title>
+    <link rel="stylesheet" href="{% static '/css/delivery-status.css' %}"/>
 </head>
-
 <body>
-    <h1>Delivery Status</h1>
-    <form method="get" action="{% url 'delivery_status' %}">
-        {% if not selected_status %}
-        <label for="status">Select Delivery Status:</label>
-        <select name="status" id="status">
-            {% for status in possible_status %}
-            <option value="{{ status }}">{{ status }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Select Delivery Status</button>
-        {% endif %}
-    </form>
-
-    {% if selected_status is not None %}
-    <h2>Orders with Status: {{ selected_status }}</h2>
-        {% if orders %}
-        <dl>
-            {% for order in orders %}
-            <dd>
-                <p>{{ order }}</p>
-                <ul>
-                    <li>Order Number: {{ order.order_number }}</li>
-                    <li>Order Date: {{ order.order_date }}</li>
-                    <!-- Include other order details as needed -->
-                </ul>
-            </dd>
-            {% endfor %}
-        </dl>
-        {% else %}
-        <p>No orders available with the selected status.</p>
-        {% endif %}
-
-    {% endif %}
+    <section class="delivery-status">
+        <div class="page-title">
+            <h1>Delivery Status</h1>
+        </div>
+        <div class="status-form">
+            <form method="get" action="{% url 'delivery_status' %}">
+                {% if not selected_status %}
+                <label for="status">Get deliveries with the status: </label>
+                <select name="status" id="status">
+                    {% for status in possible_status %}
+                    <option value="{{ status }}">{{ status }}</option>
+                    {% endfor %}
+                </select>
+                <button class="form-button" type="submit">Select Delivery Status</button>
+                {% endif %}
+            </form>
+            <h2 class="subtitle">Orders with Status: {{ selected_status }}</h2>
+        </div>
+        
+            {% if selected_status is not None %}
+                {% if orders %}
+                    {% for order in orders %}
+                    <div class="deliveries">
+                        <p class="order-number">Order: {{ order }}</p>
+                        <ul>
+                            <p><strong>Order Number: </strong>{{ order.order_number }}</p>
+                            <p><strong>Order Date: </strong>{{ order.order_date }}</p>
+                            <!-- Include other order details as needed -->
+                        </ul>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p>No orders available with the selected status.</p>
+                {% endif %}
+            {% endif %}
+    
+    </section>
 </body>
 </html>
