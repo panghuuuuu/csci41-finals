@@ -1,9 +1,27 @@
-<h2>Order Number: {{ order_number }}</h2>
-<ul>
-    {% for ordered_item in ordered_items %}
-    <li>{{ ordered_item.item.supplier_item_brand}} {{ ordered_item.item.supplier_item_model}} Quantity:
-        {{ordered_item.order_quantity}}
-        Total
-        Cost: {{ordered_item.order_total_cost}}</li>
-    {% endfor %}
-</ul>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static '/css/order-receipt.css' %}"/>
+    <title>Order Receipt</title>
+</head>
+<body>
+    <p class="batch-number">Order Number: {{ order_number }}</p>
+    <table class="ordered-items-table">
+        <thead>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Total Cose</th>
+        </thead>
+        <tbody>
+            {% for ordered_item in ordered_items %}
+            <tr>
+                <td>{{ ordered_item.item.supplier_item_brand}} {{ ordered_item.item.supplier_item_model}}</td>
+                <td>{{ordered_item.order_quantity}}</td>
+                <td>{{ordered_item.order_total_cost}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

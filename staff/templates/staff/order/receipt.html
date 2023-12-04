@@ -1,17 +1,52 @@
-<ul>
-    <p>Order number: {{ order_number }}</p>
-    <p>Order Date: {{ order_date }}</p>
-    <p>Order Time: {{ order_time }}</p>
-    <p>Receiver: {{ order_receiver }}</p>
-    <p>Supplier: {{ order_supplier }}</p>
-    <p>Items</p>
-    {% for ordered_item in ordered_items.all %}
-    <li>{{ ordered_item.item.supplier_item_brand}} {{ ordered_item.item.supplier_item_model}} <br>
-        Quantity: {{ordered_item.order_quantity}}
-        <br>
-        Cost: {{ordered_item.item.supplier_item_cost }}
-        <br>
-        Total: {{ordered_item.order_total_cost}}
-    </li>
-    {% endfor %}
-</ul>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <link rel="stylesheet" href="{% static '/css/order-receipt.css' %}"/>
+</head>
+<body>
+    <header>
+        <p class="staff-welcome">Hello</p>
+        <form class="logout-form" method="post" action="{% url 'logout_view' %}">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+    </header>
+    <section class="order-receipt">
+        <div class="page-title">
+            <h1>Order Receipt</h1>
+            <p class="batch-number">Order number: {{ order_number }}</p>
+        </div>
+        <div class="order-receipt-content">
+            <div class="order-details">
+                <p><strong>Order Date: </strong>{{ order_date }}</p>
+                <p><strong>Order Time: </strong>{{ order_time }}</p>
+                <p><strong>Receiver: </strong>{{ order_receiver }}</p>
+                <p><strong>Supplier: </strong>{{ order_supplier }}</p>
+            </div>
+        </div>
+        <div class="order-items">
+            <h2 class="subtitle">Items</h2>
+            <table>
+                <thead>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Cost</th>
+                    <th>Total</th>
+                </thead>
+                <tbody>
+                    {% for ordered_item in ordered_items.all %}
+                    <tr>
+                        <td>{{ ordered_item.item.supplier_item_brand}} {{ ordered_item.item.supplier_item_model}}</td>
+                        <td>{{ordered_item.order_quantity}}</td>
+                        <td>{{ordered_item.item.supplier_item_cost }}</td>
+                        <td>{{ordered_item.order_total_cost}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+    </section>
+</body>

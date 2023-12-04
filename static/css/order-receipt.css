@@ -40,7 +40,7 @@ body {
     height: 100vh;
 }
 
-.issuance-form {
+.order-receipt {
     display: flex;
     padding: 10px;
     display: flex;
@@ -50,14 +50,14 @@ body {
     margin: 30px auto;
 }
 
-.issuance-form .page-title {
+.order-receipt .page-title {
     background-color: white;
     padding: 10px;
     text-align: center;
     border: 1px solid #1E1E1E;
 }
 
-.issuance-form .form-details, .issuance-form .form-items {
+.order-receipt .order-details, .order-receipt .order-items {
     background-color: white;
     padding: 10px;
     border-bottom: 1px solid #1E1E1E;
@@ -71,7 +71,7 @@ body {
     font-weight: 500;
 }
 
-.form-items table {
+.order-items table {
     width: 100%;
     border-spacing: 0px;
     border-bottom: 1px solid #1E1E1E;
@@ -79,12 +79,12 @@ body {
     margin-bottom: 10px;
 }
 
-.form-items table thead {
+.order-items table thead {
     font-weight: 500;
     text-align: left;
 }
 
-.form-items td, .form-items th{
+.order-items td, .order-items th{
     padding: 0px 3px;
     font-family: 'DM Mono';
 }
