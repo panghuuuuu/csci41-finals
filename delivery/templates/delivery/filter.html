@@ -1,49 +1,79 @@
-{% block title %} <h1> Delivery Receipts </h1> {% endblock %}
-{% block header %}
-<h2> Filter Form </h2>
-{% endblock %}
-{% block content %}
-<form method="GET" action=".">
-    <button name="show_all"> Show All Deliveries </button>
-    <input type="search" name="search_by_deliverynumber" placeholder="Search for a Delivery Receipt" />
-    <input type="search" name="search_by_item_type" placeholder="Search by Item Type" />
-    <input type="search" name="search_by_date" placeholder="Search by Date" />
-    <!-- <input type="search" name="search_by_receiver" placeholder="Search by Receiver" />
-    <input type="search" name="search_by_supplier" placeholder="Search by Supplier" /> -->
-    <button type="submit"> Search </button>
-
-</form>
-<h3>Search for an Item </h3>
-<form method="GET" action=".">
-    <input type="search" name="search_by_item_model" placeholder="Input Item Model" />
-    <input type="search" name="search_by_item_brand" placeholder="Input Item Brand" />
-    <button type="submit"> Search </button>
-</form>
-
-<hr />
-<div>
-    <ul>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static '/css/delivery.css' %}"/>
+    {% block title %}<title>Delivery Receipts</title>{% endblock %}
+</head>
+<body>
+    {% block header %}
+    {% endblock %}
+    <section class="delivery-receipts">
+        <h1 class="page-title">Delivery Receipts</h1> 
+        
+        {% block content %}
+        <div class="filters">
+            <h2 class="subtitle">Filter Deliveries</h2>
+            <form method="GET" action=".">
+                <button class="form-button" name="show_all" style="width: 100%;"> Show All Deliveries </button>
+                <p style="text-align: center;"><em>or filter deliveries by</em></p>
+                <div class="searches">
+                    <input type="search" name="search_by_deliverynumber" placeholder="Delivery Number" />
+                    <input type="search" name="search_by_item_type" placeholder="Item Type" />
+                    <input type="search" name="search_by_date" placeholder="Date" />
+                </div>
+                <!-- <input type="search" name="search_by_receiver" placeholder="Search by Receiver" />
+                <input type="search" name="search_by_supplier" placeholder="Search by Supplier" /> -->
+                <button class="form-button" type="submit"> Search </button>
+            </form>
+        </div>
+        <div class="item-search">
+            <h2 class="subtitle">Search an Item</h2>
+            <form method="GET" action=".">
+                <div class="searches">
+                    <input type="search" name="search_by_item_model" placeholder="Input Item Model" />
+                <input type="search" name="search_by_item_brand" placeholder="Input Item Brand" />
+                </div>
+                <button class="form-button" type="submit"> Search </button>
+            </form>
+        </div>            
+        <div class="completed-deliveries-header">
+            <h2 class="subtitle">Completed Deliveries</h2>
+        </div>
         {% for query in queryset %}
-        <li>
-            <span> Delivery: {{ query.delivery_number }} </span> <br>
-            <span> Items Delivered: {% for delivered_item in query.delivered_items.all %}
-        <li>{{ delivered_item.ordered_item.item.supplier_item_brand }}
-            {{ delivered_item.ordered_item.item.supplier_item_model}} <br>
-            Quantity: {{delivered_item.ordered_item.order_quantity}}
-            <br>
-            Cost: {{delivered_item.ordered_item.item.supplier_item_cost }}
-            <br>
-            Total: {{delivered_item.ordered_item.order_total_cost}}
-        </li>
+        <div class="completed-deliveries">
+            <div>
+                <p class="delivery-number">Delivery Number: {{ query.delivery_number }}</p>
+            </div>
+            <div class="delivery-details">
+                <p><strong>Date: </strong>{{ query.delivery_date }}</p>
+                <p><strong>Time: </strong>{{ query.delivery_time }}</p>
+                <p><strong>Receiver: </strong>{{ query.order.receiver }}</p>
+                <p><strong>Supplier: </strong>{{ query.order.supplier }}</p>
+            </div>
+            <div class="delivery-items">
+                <table>
+                    <thead>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Cost</th>
+                        <th>Total</th>
+                    </thead>
+                    <tbody>
+                        {% for delivered_item in query.delivered_items.all %}
+                        <tr>
+                            <td>{{ delivered_item.ordered_item.item.supplier_item_brand }}</td>
+                            <td>{{delivered_item.ordered_item.order_quantity}}</td>
+                            <td>{{delivered_item.ordered_item.item.supplier_item_cost }}</td>
+                            <td>{{delivered_item.ordered_item.order_total_cost}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
         {% endfor %}
-        </span>
-        <span> Date: {{ query.delivery_date }} </span> <br>
-        <span> Time: {{ query.delivery_time }} </span> <br>
-        <span> Receiver: {{ query.order.receiver }} </span> <br>
-        <span> Supplier: {{ query.order.supplier }} </span>
-        </li>
-        <hr />
-        {% endfor %}
-    </ul>
-</div>
-{% endblock %}
+        </div>
+        {% endblock %}
+    </section>
+</body>

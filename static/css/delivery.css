@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Poppins:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap');
+
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+    font-family: 'Poppins';
+}
+
+h1 {
+    font-size: 32px;
+}
+
+header {
+    width: 100%;
+    padding: 0px 10%;
+    display: flex;
+    background-color: #F0885C;
+    justify-content: space-between;
+    align-items: center;
+    height: 5vh;
+}
+
+body {
+    background-color: #F9F8E4;
+    min-height: 100vh;
+}
+
+.delivery-receipts {
+    display: flex;
+    padding: 50px 0px;
+    min-height: 95vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 650px;
+    margin: auto;
+}
+
+.delivery-receipts .page-title {
+    background-color: white;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #1E1E1E;
+}
+
+.filters, .item-search, .completed-deliveries-header, .completed-deliveries {
+    padding: 10px;
+    background-color: white;
+    border-bottom: 1px solid #1E1E1E;
+    border-right: 1px solid #1E1E1E;
+    border-left: 1px solid #1E1E1E;
+}
+
+.filters form, .item-search form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.searches {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.searches input, .item-search form input {
+    padding: 9px;
+    flex-grow: 1;
+}
+
+.form-button {
+    width: fit-content;
+    height: 100%;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    border: 1px solid #1E1E1E;
+    background-color: #FFD976;
+}
+
+p.delivery-number {
+    font-size: 16px;
+    font-family: 'DM Mono';
+    font-weight: 500;
+}
+
+.delivery-items table {
+    margin-top: 5px;
+    width: 100%;
+    border-spacing: 0px;
+    border-bottom: 1px solid #1E1E1E;
+    border-top: 1px solid #1E1E1E;
+    margin-bottom: 10px;
+}
+
+.delivery-items table thead {
+    font-weight: 500;
+    text-align: left;
+}
+
+.delivery-items td, .delivery-items th{
+    padding: 0px 3px;
+    font-family: 'DM Mono';
+}

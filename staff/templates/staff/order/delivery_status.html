@@ -9,7 +9,6 @@
 
 <body>
     <h1>Delivery Status</h1>
-
     <form method="get" action="{% url 'delivery_status' %}">
         {% if not selected_status %}
         <label for="status">Select Delivery Status:</label>
@@ -42,7 +41,5 @@
         {% endif %}
 
     {% endif %}
-
 </body>
-
 </html>

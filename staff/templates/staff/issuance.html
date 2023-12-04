@@ -62,116 +62,115 @@
     </script>
 
 </head>
-
 <body>
     <header>
-        <p class="staff-welcome">Hello, warehouse staff!</p>
+        <p class="staff-welcome">Smiletronics Distribution Corporation</p>
         <form class="logout-form" method="post" action="{% url 'logout_view' %}">
             {% csrf_token %}
             <button type="submit">Logout</button>
         </form>
     </header>
     <section class="issuance">
-    <div class="page-title"><h1>Issuance Page</h1></div>
-    <div class="inventory-items-list">
-        <h2 class="subtitle">Inventory Items</h2>
-        <form class="client-select" method="get" action="{% url 'get_inventory_and_issued_items' %}">
-            <label for="client">Select Client:</label>
-            <select name="client" id="client">
-                {% for client in clients %}
-                <option value="{{ client.client_name }}">
-                    {{ client.client_name }}
-                </option> {% endfor %}
-            </select>
-            <button type="submit">Select Client</button>
-        </form>
-        <div id="inventoryItems">
+        <div class="page-title"><h1>Issuance Page</h1></div>
+        <div class="inventory-items-list">
+            <h2 class="subtitle">Inventory Items</h2>
+            <form class="client-select" method="get" action="{% url 'get_inventory_and_issued_items' %}">
+                <label for="client">Select Client:</label>
+                <select name="client" id="client">
+                    {% for client in clients %}
+                    <option value="{{ client.client_name }}">
+                        {{ client.client_name }}
+                    </option> {% endfor %}
+                </select>
+                <button type="submit">Select Client</button>
+            </form>
+            <div id="inventoryItems">
+                <table>
+                    <thead>
+                        <th>Item</th>
+                        <th>Qty</th>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td class="inventory-item">{{ item }}</td>
+                            <td class="inventory-item-qty">{{ item.item_qty }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody> 
+                </table>
+            </div>
+            <div class="item-issuance">
+                <p><em>Please select client before selecting agent</em></p>
+                <form method="post" id="issuanceItemForm" data-url="{% url 'issue_item' %}">
+                    {% csrf_token %}
+                    {{ form.errors }}
+
+                    <label for="agents">Agent: </label>
+                    <select id="agents" name="agents">
+                        {% for agent in client_agents %}
+                        <option value="{{ agent.agent_number }}">{{ agent }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="items">Item: </label>
+                    <select id="items" name="items">
+                        {% for item in items %}
+                        <option value="{{ item.item_number }}">{{ item }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="hidden" id="agent" name="agent">
+                    <input type="hidden" id="client" name="client">
+                    <input type="hidden" id="item" name="item">
+                    <label for="issued_quantity">Quantity: </label>
+                    <input type="number" id="issued_quantity" name="issued_quantity">
+                    <label for="issued_SRP">Issued SRP: </label>
+                    <input type="number" id="issued_SRP" name="issued_SRP">
+
+                    <button type="button" onclick="issueItem()">Add Item</button>
+                </form>
+            </div>
+            
+        </div>
+        <div class="issued-items-list">
+            <h2 class="subtitle">Issued Items List</h2>
+            <div id="issuedItems">
+            <h3 class="batch-number">Batch Number: {{ batch_number }}</h3>
             <table>
                 <thead>
                     <th>Item</th>
                     <th>Qty</th>
+                    <th>SRP</th>
                 </thead>
                 <tbody>
-                    {% for item in items %}
-                    <tr>
-                        <td class="inventory-item">{{ item }}</td>
-                        <td class="inventory-item-qty">{{ item.item_qty }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody> 
+                    {% if issued_items %}
+                        {% for issued_item in issued_items %}
+                        <tr>
+                            <td>
+                                {{ issued_item.item.item_brand }} {{ issued_item.item.item_model }}
+                            </td>
+                            <td>{{ issued_item.issued_quantity }}</td>
+                            <td>{{ issued_item.issued_SRP }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td>No issued items to display.</td></tr>
+                    {% endif %}
+                    
+                </li>
+                
+                </tbody>
             </table>
+            
+            </ul>
+            
         </div>
-        <div class="item-issuance">
-            <p><em>Please select client before selecting agent</em></p>
-            <form method="post" id="issuanceItemForm" data-url="{% url 'issue_item' %}">
+        </div>
+        <div class="generate-issuance-form">
+            <form class="generate-button" method="post" action="{% url 'submit_issuance' %}">
                 {% csrf_token %}
-                {{ form.errors }}
-
-                <label for="agents">Agent: </label>
-                <select id="agents" name="agents">
-                    {% for agent in client_agents %}
-                    <option value="{{ agent.agent_number }}">{{ agent }}</option>
-                    {% endfor %}
-                </select>
-                <label for="items">Item: </label>
-                <select id="items" name="items">
-                    {% for item in items %}
-                    <option value="{{ item.item_number }}">{{ item }}</option>
-                    {% endfor %}
-                </select>
-                <input type="hidden" id="agent" name="agent">
-                <input type="hidden" id="client" name="client">
-                <input type="hidden" id="item" name="item">
-                <label for="issued_quantity">Quantity: </label>
-                <input type="number" id="issued_quantity" name="issued_quantity">
-                <label for="issued_SRP">Issued SRP: </label>
-                <input type="number" id="issued_SRP" name="issued_SRP">
-
-                <button type="button" onclick="issueItem()">Add Item</button>
+                <button type="submit">Generate Issuance Form</button>
             </form>
         </div>
-        
-    </div>
-    <div class="issued-items-list">
-        <h2 class="subtitle">Issued Items List</h2>
-        <div id="issuedItems">
-        <h3 class="batch-number">Batch Number: {{ batch_number }}</h3>
-        <table>
-            <thead>
-                <th>Item</th>
-                <th>Qty</th>
-                <th>SRP</th>
-            </thead>
-            <tbody>
-                {% if issued_items %}
-                    {% for issued_item in issued_items %}
-                    <tr>
-                        <td>
-                            {{ issued_item.item.item_brand }} {{ issued_item.item.item_model }}
-                        </td>
-                        <td>{{ issued_item.issued_quantity }}</td>
-                        <td>{{ issued_item.issued_SRP }}</td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr><td>No issued items to display.</td></tr>
-                {% endif %}
-                
-            </li>
-            
-            </tbody>
-        </table>
-        
-        </ul>
-        
-    </div>
-    </div>
-    <div class="generate-issuance-form">
-        <form class="generate-button" method="post" action="{% url 'submit_issuance' %}">
-            {% csrf_token %}
-            <button type="submit">Generate Issuance Form</button>
-        </form>
-    </div>
     </section>
 </body>
 </html>
