@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Poppins:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap');
+
+*{
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+    font-family: 'Poppins';
+}
+
+h1 {
+    font-size: 32px;
+}
+
+header {
+    width: 100%;
+    padding: 0px 10%;
+    display: flex;
+    background-color: #F0885C;
+    justify-content: space-between;
+    align-items: center;
+    height: 5vh;
+}
+
+body {
+    background-color: #F9F8E4;
+    min-height: 100vh;
+}
+
+.delivery-receipt {
+    display: flex;
+    padding: 50px 0px;
+    min-height: 95vh;
+    display: flex;
+    flex-direction: column;
+    max-width: 650px;
+    margin: auto;
+}
+
+.delivery-receipt .page-title {
+    background-color: white;
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #1E1E1E;
+}
+
+.delivery-receipt .delivery-details, .delivery-receipt .delivered-items {
+    padding: 10px;
+    background-color: white;
+    border-bottom: 1px solid #1E1E1E;
+    border-right: 1px solid #1E1E1E;
+    border-left: 1px solid #1E1E1E;
+}
+
+.delivery-number {
+    font-size: 16;
+    font-family: 'DM Mono';
+    font-weight: 500;
+}
+
+.delivery-receipt table {
+    width: 100%;
+    border-spacing: 0px;
+    border-bottom: 1px solid #1E1E1E;
+    border-top: 1px solid #1E1E1E;
+    margin-bottom: 10px;
+}
+
+.delivery-receipt table thead {
+    font-weight: 500;
+    text-align: left;
+}
+
+.delivery-receipt td, .delivery-receipt th{
+    padding: 0px 3px;
+    font-family: 'DM Mono';
+}

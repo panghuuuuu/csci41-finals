@@ -1,18 +1,46 @@
-<h3> Delivery Receipt </h3>
-<ul>
-    <p>Delivery number: {{ delivery_number }}</p>
-    <p>Delivery Date: {{ delivery_date }}</p>
-    <p>Delivery Time: {{ delivery_time }}</p>
-    <p>Receiver: {{ delivery_receiver }}</p>
-    <p>Supplier: {{ delivery_supplier }}</p>
-    <p>Delivered Items</p>
-    {% for delivered_item in delivered_items.all %}
-    <li>{{ delivered_item.ordered_item.item}}
-        Quantity: {{delivered_item.ordered_item.order_quantity}}
-        <br>
-        Cost: {{delivered_item.ordered_item.item.supplier_item_cost }}
-        <br>
-        Total: {{delivered_item.ordered_item.order_total_cost}}
-    </li>
-    {% endfor %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static '/css/delivery-receipt.css' %}"/>
+    <title>Orders</title>
+</head>
+
+<body>
+    <section class="delivery-receipt">
+        <div class="page-title">
+            <h1>Delivery Receipt</h1>
+            <p class="delivery-number">Delivery Number: {{ delivery_number }}</p>
+        </div>
+        <div class="delivery-details">
+            <p><strong>Date: </strong>{{ delivery_date }}</p>
+            <p><strong>Time: </strong>{{ delivery_time }}</p>
+            <p><strong>Receiver: </strong> {{ delivery_receiver }}</p>
+            <p><strong>Supplier: </strong>{{ delivery_supplier }}</p>
+        </div>
+        <div class="delivered-items">
+            <h2 class="subtitle">Delivered Items</h2>
+            <table>
+                <thead>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Cost</th>
+                    <th>Total</th>
+                </thead>
+                <tbody>
+                    {% for delivered_item in delivered_items.all %}
+                    <tr>
+                        <td>{{delivered_item.ordered_item.item}}</td>
+                        <td>{{delivered_item.ordered_item.order_quantity}}</td>
+                        <td>{{delivered_item.ordered_item.item.supplier_item_cost }}</td>
+                        <td>{{delivered_item.ordered_item.order_total_cost}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+        </div>
+    </section>
 </ul>
+</body>
+
