@@ -34,8 +34,6 @@ h1 {
     align-items: center;
     width: fit-content;
     padding: 20px;
-    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.15);
-    border-radius: 10px;
     background-color: white;
 }
 
@@ -45,7 +43,6 @@ h1 {
 
 .login .login-container input {
     border: 1px solid #1E1E1E;
-    border-radius: 5px;
     padding: 10px;
     width: 300px;
 }
@@ -59,7 +56,6 @@ h1 {
 
 .login .login-container .form-button {
     width: fit-content;
-    border-radius: 5px;
     padding: 10px;
     border: none;
     cursor: pointer;

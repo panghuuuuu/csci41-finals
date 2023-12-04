@@ -1,16 +1,51 @@
-<p>Batch number: {{ batch_number }}</p>
-<p>Issue Date: {{ issue_date }}</p>
-<p>Issue Time: {{ issue_time }}</p>
-<p>Agent: {{ agent }}</p>
-<p>Client: {{ client }}</p>
-<p>Issuer: {{ issuer }}</p>
-
-<p>Items</p>
-<ul>
-    {% for issued_item in issued_items %}
-    <li>{{ issued_item.item.item_brand }} {{ issued_item.item.item_model }}
-        Quantity: {{ issued_item.issued_quantity }}
-        SRP: {{ issued_item.issued_SRP }}
-    </li>
-    {% endfor %}
-</ul>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static '/css/issuance-form.css' %}"/>
+        <title>Issuance Form</title>
+    </head>
+    </body>
+        <header>
+            <p class="staff-welcome">Hello, warehouse staff!</p>
+            <form class="logout-form" method="post" action="{% url 'logout_view' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </header>
+        <section class="issuance-form">
+            <div class="page-title">
+                <h1>Issuance Form</h1>
+                <p class="batch-number">Batch number: {{ batch_number }}</p>
+            </div>
+            <div class="form-details">
+                <p><strong>Issue Date: </strong>{{ issue_date }}</p>
+                <p><strong>Time: </strong>{{ issue_time }}</p>
+                <p><strong>Agent: </strong>{{ agent }}</p>
+                <p><strong>Client: </strong>{{ client }}</p>
+                <p><strong>Issuer: </strong>{{ issuer }}</p>
+            </div>
+            <div class="form-items">
+                <h2 class="subtitle">Items</h2>
+                <table>
+                    <thead>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>SRP</th>
+                    </thead>
+                    <tbody>
+                        {% for issued_item in issued_items %}
+                        <tr>
+                            <td>{{ issued_item.item.item_brand }} {{ issued_item.item.item_model }}</td>
+                            <td>{{ issued_item.issued_quantity }}</td>
+                            <td>{{ issued_item.issued_SRP }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    <body>
+</html>
