@@ -302,7 +302,9 @@ def transfer_items(request):
             else:
                 transfer_form = Transfer.objects.create(receiver_batch_number=receiver_batch_number, source_batch_number=source_batch_number)
  
-            transferred_item_instance = TransferredItem.objects.create(transfer_number=transfer_form, transferred_item=transferred_item)
+            transferred_item_instance = TransferredItem.objects.create(transfer_number=transfer_form, item=transferred_item)
+            print(transferred_item_instance)
+
             receiver_batch = IssuedItem.objects.filter(batch_number=receiver_batch_number)
             source_batch = IssuedItem.objects.filter(batch_number=source_batch_number)
             transfer_form = Transfer.objects.get(isComplete=False)
@@ -324,6 +326,7 @@ def complete_transfer(request):
             receiver = Issuance.objects.get(batch_number=receiver_batch_number)
             receiving_agent = receiver.agent
             transferred_items = TransferredItem.objects.filter(transfer_number=transfer_form)
+            print(transferred_items)
             transfer_date = transfer_form.transfer_date
             transfer_form.isComplete = True
             transfer_form.save()

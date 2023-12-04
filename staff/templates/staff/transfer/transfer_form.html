@@ -3,9 +3,9 @@
 <p>To:{{receiving_agent}} Batch: {{receiver_batch_number}}</p>
 <ul>
     {% for item in transferred_items %}
-    <li>{{ item.transferred_item.item.item_brand }} {{ item.transferred_item.item.item_model }}
-        Quantity: {{ item.transferred_item.issued_quantity }}
-        SRP: {{ item.transferred_item.issued_SRP }}
+    <li>{{ item.item.item.item_brand }} {{ item.iten.item.item_model }}
+        Quantity: {{ item.item.issued_quantity }}
+        SRP: {{ item.item.issued_SRP }}
     </li>
     {% endfor %}
 </ul>

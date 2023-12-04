@@ -127,7 +127,7 @@ class TransferredItem(models.Model):
     item = models.ForeignKey('IssuedItem', on_delete=models.CASCADE)
     transfer_number = models.ForeignKey(Transfer, on_delete=models.CASCADE)
     def __str__(self):
-        return f"{self.transferred_item}"
+        return f"{self.item}"
 
 class SoldItem(models.Model):
     item = models.ForeignKey('IssuedItem', on_delete=models.CASCADE)
