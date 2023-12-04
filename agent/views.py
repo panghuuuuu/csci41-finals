@@ -52,7 +52,8 @@ def input_sales(request):
             agent_item = IssuedItem.objects.filter(batch_number=agent_batch, item=item_instance).first()       
             sold_item_instance = SoldItem.objects.create(item=agent_item, invoice_number=sales, sold_quantity=selected_quantity)
             
-            sales.total_sales += sold_item_instance.total_sales
+            agent_item.issued_quantity -= selected_quantity
+            agent_item.save()
 
             sold_items = SoldItem.objects.filter(invoice_number=sold_item_instance.invoice_number)
             sold_items_html = render_to_string('sales.html', {'sold_items': sold_items, 'invoice_number': sold_item_instance.invoice_number})
@@ -76,7 +77,6 @@ def submit_sales(request):
                 sales.total_sales += item.total_sales
             sales.save()
             total_sales = sales.total_sales
-            print(total_sales)
 
         except Agent.DoesNotExist:
             return HttpResponse("No pending order found for current user.")
