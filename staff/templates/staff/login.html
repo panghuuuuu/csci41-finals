@@ -1,21 +1,25 @@
 <!-- templates/staff/login.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static '/css/login.css' %}"/>
     <title>Login</title>
 </head>
-
 <body>
-    <h1>Login</h1>
+    <section class="login">
+    <h1 class="title">Smiletronics</h1>
+    <div class="login-container">
+        <h2>Staff Login</h2>
     <form method="post" action="{% url 'login_view' %}">
         {% csrf_token %}
-        <label for="staff_number">Staff Number:</label>
+        <label for="staff_number">Staff Number</label>
         <input type="text" id="staff_number" name="staff_number" required>
-        <button type="submit">Login</button>
+        <button class="form-button" type="submit">Login</button>
     </form>
+    </div>    
+    </section>
 </body>
-
 </html>
