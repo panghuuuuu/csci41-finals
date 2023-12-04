@@ -1,24 +1,32 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="{% static '/css/supplier-deliveries.css' %}"/>
+    <title>Orders</title>
 </head>
 
 <body>
-    <form method="post" action="{% url 'mark_delivered' %}">
-    {% csrf_token %}
-    <h2>Deliveries</h2>
-    <ul>
-    {% for order in orders %}
-    <li>Order: {{ order }} Receiver: {{ order.receiver }} Supplier: {{ order.supplier }}
-    <button name="order_number" value="{{ order.order_number }}" type="submit">Mark as Delivered</button></li>
-    {% endfor %}
-    </ul>
-    </form>
-
+    <section class="orders">
+        <form method="post" action="{% url 'mark_delivered' %}">
+            {% csrf_token %}
+            <div class="page-title"><h1>Orders</h1></div>
+            {% for order in orders %}
+            <div class="order">
+                <div class="order-details">
+                    <p class="order-number">Order: {{ order }}</p>
+                    <p><strong>Receiver: </strong>{{ order.receiver }}</p>
+                    <p><strong>Supplier: </strong>{{ order.supplier }}</p>
+                    <p><strong></strong></p>
+                </div>
+                <div class="mark-button">
+                    <button class="form-button" name="order_number" value="{{ order.order_number }}" type="submit">Mark as Delivered</button>
+                </div>
+            </div>
+            {% endfor %}
+            </form>
+    </section>
 </body>
-
 </html>
