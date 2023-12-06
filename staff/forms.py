@@ -49,7 +49,6 @@ class IssuanceItemForm(forms.ModelForm):
 
 class TransferItemForm(forms.ModelForm):
     receiver_batch_number = forms.ModelChoiceField(queryset=BatchInventory.objects.all())
-
     class Meta:
         model = IssuedItem
         fields = ['batch_number', 'item'] 
@@ -71,5 +70,7 @@ class TransferItemForm(forms.ModelForm):
                 staff = Staff.objects.get(staff_number=self.request.user.username)
             except Staff.DoesNotExist:
                 raise forms.ValidationError("Staff role not found for the current user.")
-
         return cleaned_data
+
+
+    

@@ -23,9 +23,13 @@ class IssuanceAdmin(admin.ModelAdmin):
 class TransferAdmin(admin.ModelAdmin):
     list_display = ('transfer_number', 'isComplete')
 
+class ReturnAdmin(admin.ModelAdmin):
+    list_display = ('batch', 'return_date')
+
 admin.site.register(Staff, StaffAdmin)
 admin.site.register(Receiver, ReceiverAdmin)
 admin.site.register(Issuer, IssuerAdmin)
 admin.site.register(Order, OrdersAdmin)
 admin.site.register(Issuance, IssuanceAdmin)
 admin.site.register(Transfer, TransferAdmin)
+admin.site.register(Return, ReturnAdmin)

@@ -11,6 +11,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.core.exceptions import ValidationError
 
 def login_view(request):
     if request.method == 'POST':

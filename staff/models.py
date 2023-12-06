@@ -4,6 +4,8 @@ from django.utils import timezone
 from supplier.models import Supplier
 from client.models import Client
 from agent.models import Agent
+from django.core.exceptions import ValidationError
+
 class Staff(models.Model):
     REGULAR = 'Regular'
     ISSUER = 'Issuer'
@@ -85,13 +87,23 @@ class Issuance(models.Model):
         self.verify_agent()
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return f"{self.batch_number} Issuer: {self.issuer}"
+
+
 class Transfer(models.Model):
     transfer_number = models.AutoField(primary_key=True, unique=True)
     receiver_batch_number = models.ForeignKey(BatchInventory, on_delete=models.CASCADE, null=False, blank=False, related_name="receiver_batch_number")
     source_batch_number = models.ForeignKey(BatchInventory, on_delete=models.CASCADE, null=False, blank=False, related_name="source_batch_number")
     isComplete = models.BooleanField(default=False)
     transfer_date = models.DateField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.transfer_number} Receiver: {self.receiver_batch_number} Source: {self.source_batch_number}"
 
 class Return(models.Model):
     batch = models.ForeignKey("Issuance", on_delete=models.CASCADE, null=False, blank=False)
     return_date = models.DateField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.batch} {self.return_date}"

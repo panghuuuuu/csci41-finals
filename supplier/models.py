@@ -14,3 +14,4 @@ class Delivery(models.Model):
     
     def __str__(self):
         return f"{self.delivery_number} {self.delivery_date}"
+        

@@ -4,6 +4,8 @@ from supplier.models import Supplier, Delivery
 from staff.models import Issuer, Receiver, BatchInventory, Issuance, Order, Transfer, Return
 from client.models import Client
 from agent.models import Sales
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 # Create your models here.
 
 class SupplierItem(models.Model):
@@ -55,7 +57,12 @@ class ItemType(models.Model):
     ]
 
     item_type = models.CharField(max_length=300, choices=ITEM_TYPE_CHOICES)
-    item_discount = models.DecimalField(max_digits=5, decimal_places=4, default=0.0)
+    item_discount = models.DecimalField(
+        max_digits=5,
+        decimal_places=4,
+        default=0.0,
+        validators=[MinValueValidator(0), MaxValueValidator(1)]
+    )    
     item_client = models.ForeignKey(Client, on_delete=models.CASCADE, null=False, blank=False)
 
     def __str__(self):
@@ -114,7 +121,7 @@ class IssuedItem(models.Model):
     item_discount = models.DecimalField(max_digits=10, decimal_places=3)
     issued_SRP = models.DecimalField(max_digits=10, decimal_places=3)
     batch_number = models.ForeignKey(BatchInventory, on_delete=models.CASCADE, related_name='issued_items')
-    item_type = models.ForeignKey(ItemType, on_delete=models.CASCADE)
+    item_type = models.ForeignKey(ItemType, on_delete=models.SET_NULL, null=True)
 
     def save(self, *args, **kwargs):
         self.item_discount = self.item_type.item_discount
@@ -148,5 +155,8 @@ class ReturnedItem(models.Model):
     return_quantity = models.DecimalField(max_digits=10, decimal_places=3)
 
     def __str__(self):
-        return f"{self.return_item}: {self.returned_quantity} pcs"
+        return f"{self.item}: {self.return_quantity} pcs"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 

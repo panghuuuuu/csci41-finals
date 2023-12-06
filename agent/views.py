@@ -23,12 +23,12 @@ def get_agents(request):
             agent_items = IssuedItem.objects.filter(batch_number=agent_batch)
         except Issuance.DoesNotExist:
             return HttpResponse("No issuance found for current user.")
-        try:
-            sales = Sales.objects.filter(agent=selected_agent).first()
-            sold_items = SoldItem.objects.filter(invoice_number=sales)
-            invoice = sales.invoice_number
-        except Sales.DoesNotExist:
-            return HttpResponse("No existing sales found for current user.")
+        existing_sales = Sales.objects.filter(agent=selected_agent).first()
+        if existing_sales:
+            sold_items = SoldItem.objects.filter(invoice_number=existing_sales)
+            invoice = existing_sales.invoice_number
+        else:
+            sold_item = []
     return render(request, 'sales.html', {'agents': agents, 'selected_agent': selected_agent, 'agent_items': agent_items, 'sold_items': sold_items, 'invoice': invoice})
 
 def input_sales(request):

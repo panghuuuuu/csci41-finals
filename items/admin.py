@@ -26,7 +26,7 @@ class ItemTransactionAdmin(admin.ModelAdmin):
         elif hasattr(obj, 'issued_quantity'):
             return obj.issued_quantity
         elif hasattr(obj, 'return_quantity'):
-            return obj.quantity_returned
+            return obj.return_quantity
         else:
             return None
 

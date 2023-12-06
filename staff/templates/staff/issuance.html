@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static '/css/issuance.css' %}"/>
+    <link rel="stylesheet" href="{% static '/css/issuance.css' %}" />
     <title>Issuance Page</title>
     <script>
         window.addEventListener('load', function () {
@@ -62,6 +62,7 @@
     </script>
 
 </head>
+
 <body>
     <header>
         <p class="staff-welcome">Smiletronics Distribution Corporation</p>
@@ -71,7 +72,9 @@
         </form>
     </header>
     <section class="issuance">
-        <div class="page-title"><h1>Issuance Page</h1></div>
+        <div class="page-title">
+            <h1>Issuance Page</h1>
+        </div>
         <div class="inventory-items-list">
             <h2 class="subtitle">Inventory Items</h2>
             <form class="client-select" method="get" action="{% url 'get_inventory_and_issued_items' %}">
@@ -92,12 +95,12 @@
                     </thead>
                     <tbody>
                         {% for item in items %}
-                        <tr>
+                        <tr >
                             <td class="inventory-item">{{ item }}</td>
                             <td class="inventory-item-qty">{{ item.item_qty }}</td>
                         </tr>
                         {% endfor %}
-                    </tbody> 
+                    </tbody>
                 </table>
             </div>
             <div class="item-issuance">
@@ -129,20 +132,20 @@
                     <button type="button" onclick="issueItem()">Add Item</button>
                 </form>
             </div>
-            
+
         </div>
         <div class="issued-items-list">
             <h2 class="subtitle">Issued Items List</h2>
             <div id="issuedItems">
-            <h3 class="batch-number">Batch Number: {{ batch_number }}</h3>
-            <table>
-                <thead>
-                    <th>Item</th>
-                    <th>Qty</th>
-                    <th>SRP</th>
-                </thead>
-                <tbody>
-                    {% if issued_items %}
+                <h3 class="batch-number">Batch Number: {{ batch_number }}</h3>
+                <table>
+                    <thead>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>SRP</th>
+                    </thead>
+                    <tbody>
+                        {% if issued_items %}
                         {% for issued_item in issued_items %}
                         <tr>
                             <td>
@@ -152,18 +155,20 @@
                             <td>{{ issued_item.issued_SRP }}</td>
                         </tr>
                         {% endfor %}
-                    {% else %}
-                        <tr><td>No issued items to display.</td></tr>
-                    {% endif %}
-                    
-                </li>
-                
-                </tbody>
-            </table>
-            
-            </ul>
-            
-        </div>
+                        {% else %}
+                        <tr>
+                            <td>No issued items to display.</td>
+                        </tr>
+                        {% endif %}
+
+                        </li>
+
+                    </tbody>
+                </table>
+
+                </ul>
+
+            </div>
         </div>
         <div class="generate-issuance-form">
             <form class="generate-button" method="post" action="{% url 'submit_issuance' %}">
@@ -173,4 +178,5 @@
         </div>
     </section>
 </body>
+
 </html>
